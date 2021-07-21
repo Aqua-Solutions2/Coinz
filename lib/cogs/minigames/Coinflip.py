@@ -41,7 +41,7 @@ class Coinflip(Cog):
                 description=lang.get_message(ctx.language, 'COINFLIP_General') % (ctx.author, member, COMMAND, member.display_name, play_token),
                 color=Color.blue()
             )
-            embed.add_field(name="Bet", value=f"{currency}{bet}", inline=True)
+            embed.add_field(name=lang.get_message(ctx.language, 'CMD_Bet'), value=f"{currency}{bet}", inline=True)
             embed.add_field(name=f"{ctx.author}", value=f"{side}", inline=True)
             embed.set_author(name=COMMAND.title(), icon_url=f"{ctx.author.avatar_url}")
             embed.set_footer(text=self.bot.FOOTER)

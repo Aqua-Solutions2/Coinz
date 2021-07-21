@@ -13,8 +13,8 @@ class Crash(Cog):
 
     def create_embed(self, ctx, multiplier, currency, profit, color=Color.blue()):
         embed = Embed(color=color)
-        embed.add_field(name=lang.get_message(ctx.language, 'CRASH_Multiplier'), value=f"{multiplier}x", inline=True)
-        embed.add_field(name=lang.get_message(ctx.language, 'CRASH_Profit'), value=f"{currency}{profit}", inline=True)
+        embed.add_field(name=lang.get_message(ctx.language, 'CMD_Multiplier'), value=f"{multiplier}x", inline=True)
+        embed.add_field(name=lang.get_message(ctx.language, 'CMD_Profit'), value=f"{currency}{profit}", inline=True)
         embed.set_author(name=COMMAND.title(), icon_url=f"{ctx.author.avatar_url}")
         embed.set_footer(text=self.bot.FOOTER)
         return embed
@@ -48,14 +48,14 @@ class Crash(Cog):
                     await message.clear_reaction("❌")
                     break
                 except TimeoutError:
-                    if randint(1, 10) == 8:
+                    if randint(1, 12) == 8:
                         await message.edit(content="", embed=self.create_embed(ctx, rate, currency, -bet, Color.red()))
                         await message.clear_reaction("❌")
                         break
                     else:
                         rate = round(rate + 0.2, 1)
                         profit = int(bet * rate)
-                        await message.edit(content="", embed=self.create_embed(ctx, rate, currency, profit))
+                        await message.edit(embed=self.create_embed(ctx, rate, currency, profit))
         else:
             ctx.command.reset_cooldown(ctx)
 
