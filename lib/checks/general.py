@@ -23,20 +23,6 @@ def get_value(name, string):
 def create_row(guild_id, user_id):
     db.execute("INSERT IGNORE INTO userData (GuildId, UserID) VALUES (%s, %s)", guild_id, user_id)
 
-#
-# def has_enough_balance(guild_id, user_id, req_bal):
-#     bal = db.record("SELECT cash FROM userData WHERE GuildID = %s AND UserID = %s", guild_id, user_id)
-#
-#     if bal is None:
-#         return False
-#     else:
-#         bal = bal[0]
-#
-#     if bal >= req_bal:
-#         return True
-#     else:
-#         return False
-
 
 def has_failed(guild_id, command):
     failrates = db.record(f"SELECT Failrates FROM guilds WHERE GuildID = %s", guild_id)
@@ -85,7 +71,7 @@ def get_currency(guild_id):
 
 def get_payout(guild_id, command, type_="Payouts"):
     payouts = db.record(f"SELECT {type_} FROM guildPayouts WHERE GuildID = %s", guild_id)
-    payout = get_value(command, payouts)
+    payout = get_value(command, payouts[0])
     payout = payout.split(',')
     return randint(payout[0], payout[1])
 
