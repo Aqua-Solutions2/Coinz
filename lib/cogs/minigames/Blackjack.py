@@ -86,7 +86,7 @@ class Blackjack(Cog):
             desc = lang.get_message(ctx.language, 'BLACKJACK_LoseMessage') % (currency, bet)
             color = Color.red()
         elif status == 'tie':
-            desc = lang.get_message(ctx.language, 'BLACKJACK_TieMessage')
+            desc = lang.get_message(ctx.language, 'MINIGAMES_TieMessage')
             color = Color.blue()
             general.add_money(ctx.guild.id, ctx.author.id, bet)
         else:
