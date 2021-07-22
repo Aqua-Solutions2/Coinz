@@ -2,7 +2,6 @@ from discord import Embed, Color, Member
 from discord.ext.commands import command, Cog, BucketType, cooldown
 from lib.checks import general, lang, minigames
 from random import choice
-from string import hexdigits
 from asyncio import TimeoutError
 
 COMMAND = "coinflip"
@@ -16,7 +15,7 @@ class Coinflip(Cog):
     @cooldown(2, 3600, BucketType.user)
     async def coinflip(self, ctx, member: Member, bet: int, side: str):
         if general.check_status(ctx.guild.id, COMMAND):
-            err_msg = minigames.general_checks(ctx.guild.id, ctx.author.id, bet, COMMAND)
+            err_msg = minigames.general_checks(ctx.guild.id, ctx.author.id, bet, COMMAND, member.id)
 
             if err_msg is not None:
                 await ctx.send(lang.get_message(ctx.language, err_msg))
@@ -27,15 +26,8 @@ class Coinflip(Cog):
             if side not in options:
                 return
 
-            # generating unique code
-            code_karakters = hexdigits
-            unique_code = []
-
-            for x in range(5):
-                unique_code.append(choice(code_karakters))
-            play_token = "".join(unique_code)
-
             currency = general.get_currency(ctx.guild.id)
+            play_token = minigames.create_token()
 
             embed = Embed(
                 description=lang.get_message(ctx.language, 'COINFLIP_General') % (ctx.author, member, COMMAND, member.display_name, play_token),
