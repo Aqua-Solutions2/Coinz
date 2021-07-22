@@ -30,7 +30,7 @@ class Coinflip(Cog):
             play_token = minigames.create_token()
 
             embed = Embed(
-                description=lang.get_message(ctx.language, 'COINFLIP_General') % (ctx.author, member, COMMAND, member.display_name, play_token),
+                description=lang.get_message(ctx.language, 'MINIGAMES_Challenge') % (ctx.author, member, COMMAND, member.display_name, play_token),
                 color=Color.blue()
             )
             embed.add_field(name=lang.get_message(ctx.language, 'CMD_Bet'), value=f"{currency}{bet}", inline=True)
@@ -60,7 +60,7 @@ class Coinflip(Cog):
                 embed = Embed(description=lang.get_message(ctx.language, 'COINFLIP_End') % (winner.mention, currency, bet * 2), color=Color.green())
                 embed.set_author(name=COMMAND.title(), icon_url=f"{ctx.author.avatar_url}")
                 embed.set_footer(text=self.bot.FOOTER)
-                await message_embed.edit(embed=embed)
+                await message_embed.edit(content="", embed=embed)
             except TimeoutError:
                 await ctx.send(lang.get_message(ctx.language, 'CMD_NoResponds'))
         else:
