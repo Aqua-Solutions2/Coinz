@@ -16,7 +16,7 @@ class RussianRoulette(Cog):
         embed = Embed(description=desc, color=color)
         embed.add_field(name=lang.get_message(ctx.language, 'CMD_Multiplier'), value=f"{multiplier}x", inline=True)
         embed.add_field(name=lang.get_message(ctx.language, 'CMD_Profit'), value=f"{currency}{int(bet * multiplier)}", inline=True)
-        embed.set_author(name=COMMAND.title(), icon_url=f"{ctx.author.avatar_url}")
+        embed.set_author(name=COMMAND, icon_url=f"{ctx.author.avatar_url}")
         embed.set_footer(text=self.bot.FOOTER)
         return embed
 
@@ -71,7 +71,11 @@ class RussianRoulette(Cog):
                     else:
                         await message.edit(embed=self.create_embed(ctx, lang.get_message(ctx.language, 'RUSROULETTE_Missed'), currency, bet, multiplier))
                 except TimeoutError:
-                    pass
+                    embed = Embed(description=lang.get_message(ctx.language, 'CMD_NoResponds'), color=Color.red())
+                    embed.set_author(name=COMMAND, icon_url=f"{ctx.author.avatar_url}")
+                    embed.set_footer(text=self.bot.FOOTER)
+                    await message.edit(embed=embed)
+                    break
         else:
             ctx.command.reset_cooldown(ctx)
 
