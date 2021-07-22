@@ -1,14 +1,18 @@
 from lib.db import db
 from lib.checks import general
+from string import hexdigits
+from random import choice
 
 
-def general_checks(guild_id, user_id, bet, command):
+def general_checks(guild_id, user_id, bet, command, member_id=0):
     min_bet, max_bet = get_bets(guild_id, command)
 
     if not check_bet(bet, min_bet, max_bet):
         err_msg = 'MINIGAMES_BetInvalid'
     elif not has_enough_balance(guild_id, user_id, bet):
         err_msg = 'MINIGAMES_NotEnoughBalance'
+    elif user_id == member_id:
+        err_msg = 'MINIGAMES_MemberIsAuthor'
     else:
         err_msg = None
     return err_msg
@@ -32,6 +36,10 @@ def get_bets(guild_id, command):
 def has_enough_balance(guild_id, user_id, bet):
     user_bal = db.record("SELECT cash FROM userData WHERE GuildID = %s AND UserID = %s", guild_id, user_id)
     return True if int(user_bal[0]) >= bet else False
+
+
+def create_token():
+    return "".join([choice(hexdigits) for x in range(5)])
 
 
 if __name__ == '__main__':
