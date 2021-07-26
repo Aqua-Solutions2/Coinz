@@ -21,7 +21,9 @@ def get_value(name, string):
 
 
 def create_row(guild_id, user_id):
-    db.execute("INSERT IGNORE INTO userData (GuildId, UserID) VALUES (%s, %s)", guild_id, user_id)
+    userdata = db.record("SELECT RowID FROM userData WHERE GuildID = %s AND UserID = %s", guild_id, user_id)
+    if userdata is None:
+        db.execute("INSERT INTO userData (GuildId, UserID) VALUES (%s, %s)", guild_id, user_id)
 
 
 def has_failed(guild_id, command):
