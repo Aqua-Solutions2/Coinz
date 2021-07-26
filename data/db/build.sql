@@ -20,7 +20,9 @@ CREATE TABLE IF NOT EXISTS userData (
 	Inventory TEXT DEFAULT '',
 	Messages INT DEFAULT 0,
 	Experience INT DEFAULT 0,
-	XpLevel INT DEFAULT 0
+	XpLevel INT DEFAULT 0,
+	SocialLikes INT DEFAULT 0,
+	SocialFollowers INT DEFAULT 0
 );
 
 CREATE TABLE IF NOT EXISTS guildWorkPayouts (
