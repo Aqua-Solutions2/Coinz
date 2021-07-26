@@ -20,7 +20,10 @@ class SmallCommands(Cog):
     @command(name="dashboard", aliases=["website"])
     async def dashboard(self, ctx):
         """Krijg de link om ons dashboard online te bezoeken."""
-        embed = self.create_embed(title="Alle Links", desc=f"[**Website**]({self.bot.WEBSITE}) | [**Dashboard**]({self.bot.WEBSITE}dashboard/) | [**Docs**](https://docs.coinzbot.xyz/) | [**EconomieBot Deluxe**]({self.bot.WEBSITE}buy)")
+        embed = self.create_embed(title="Alle Links", desc=f"[**Website**]({self.bot.WEBSITE}) |"
+                                                           f"[**Dashboard**]({self.bot.WEBSITE}dashboard/) |"
+                                                           f"[**Docs**](https://docs.coinzbot.xyz/) |"
+                                                           f"[**Coinzbot Premium**]({self.bot.WEBSITE}buy)")
         await ctx.send(embed=embed)
 
     @command(name="source", aliases=["sourcecode"])
@@ -31,7 +34,7 @@ class SmallCommands(Cog):
     @command(name="invite")
     async def invite(self, ctx):
         """Bekijk de source code online"""
-        await ctx.send("**Invite URL:** COMING SOON")
+        await ctx.send("**Invite URL:** <https://www.coinzbot.xyz/invite>")
 
     @Cog.listener()
     async def on_ready(self):
