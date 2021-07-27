@@ -45,7 +45,6 @@ class Ready(object):
             sys.stdout.flush()
             sys.stdout.write("\b" * (self.WIDTH + 1))
             self.START_LOADING_BAR = True
-        time.sleep(0.05)
         sys.stdout.write("=" * (self.WIDTH // len(COGS)))
         sys.stdout.flush()
 
@@ -100,10 +99,10 @@ class Bot(commands.AutoShardedBot):
         stored_guilds = db.column("SELECT GuildID from guilds")
         for stored_guild in stored_guilds:
             if stored_guild not in [guild.id for guild in self.guilds]:
-                remove_guilds.append(stored_guild)
+                remove_guilds.append((stored_guild,))
 
         for table in self.TABLES:
-            db.multiexec(f"DELETE FROM {table} WHERE GuildID = %s", ((guild_id for guild_id in remove_guilds)))
+            db.multiexec(f"DELETE FROM {table} WHERE GuildID = %s", remove_guilds)
         db.commit()
 
     def run(self):
@@ -121,8 +120,8 @@ class Bot(commands.AutoShardedBot):
             elif not self.ready:
                 await ctx.send(lang.get_message(ctx.language, "INIT_StartingUp"))
             else:
-                db.execute("INSERT IGNORE INTO guilds (GuildID) VALUES (%s)", message.guild.id)
-                db.execute("INSERT IGNORE INTO guildPayouts (GuildID) VALUES (%s)", message.guild.id)
+                db.execute("INSERT IGNORE INTO guilds (GuildID) VALUES (%s)", ctx.guild.id)
+                db.execute("INSERT IGNORE INTO guildPayouts (GuildID) VALUES (%s)", ctx.guild.id)
                 general.create_row(ctx.guild.id, ctx.author.id)
                 await self.invoke(ctx)
 
@@ -141,7 +140,6 @@ class Bot(commands.AutoShardedBot):
 
     async def on_command_error(self, ctx, error):
         ignored_errors = (commands.CommandNotFound,)
-        language = lang.get_lang(ctx.guild.id)
 
         if isinstance(error, ignored_errors):
             print("ignored_error")
@@ -154,9 +152,11 @@ class Bot(commands.AutoShardedBot):
                 time_formatted = f"{round(cooldown, 1)}s"
             else:
                 time_formatted = time.strftime('%-Hh %-Mm %-Ss', time.gmtime(cooldown))
-            await ctx.send(":x: " + lang.get_message(language, 'ERR_OnCooldown') % time_formatted)
+            await ctx.send(":x: " + lang.get_message(ctx.language, 'ERR_OnCooldown') % time_formatted)
         elif isinstance(error, commands.CheckFailure):
             print("checkfailure")
+        elif isinstance(error, commands.MissingRequiredArgument):
+            print("MissingRequiredArgument")
         elif isinstance(error, commands.MemberNotFound):
             print("membernotfound")
         elif isinstance(error, commands.ChannelNotFound):
