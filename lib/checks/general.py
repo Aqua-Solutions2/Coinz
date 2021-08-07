@@ -1,6 +1,6 @@
 from random import randint, choice
-from lib.db import db
 
+from lib.db import db
 
 max_balance = 1000000000000  # 1 Trillion
 min_balance = -1000000  # 1 Million
@@ -75,7 +75,7 @@ def get_payout(guild_id, command, type_="Payouts"):
     payouts = db.record(f"SELECT {type_} FROM guildPayouts WHERE GuildID = %s", guild_id)
     payout = get_value(command, payouts[0])
     payout = payout.split(',')
-    return randint(payout[0], payout[1])
+    return randint(int(payout[0]), int(payout[1]))
 
 
 def get_random_sentence(file, guild_id=0, payout=0):
