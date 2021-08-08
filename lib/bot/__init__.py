@@ -1,15 +1,17 @@
-from apscheduler.schedulers.asyncio import AsyncIOScheduler
-from discord import Intents
-from discord.errors import Forbidden
-from discord.ext import commands
-from ..db import db
+import sys
+import time
+from asyncio import sleep
+from datetime import datetime
 from glob import glob
 from pathlib import Path
-from asyncio import sleep
-import time
-import sys
-from datetime import datetime
+
+from apscheduler.schedulers.asyncio import AsyncIOScheduler
+from discord import Intents, ActivityType, Activity
+from discord.errors import Forbidden
+from discord.ext import commands
+
 from ..checks import general, lang
+from ..db import db
 
 PREFIX = "?"
 BOT_NAME = "Coinz"
@@ -127,11 +129,11 @@ class Bot(commands.AutoShardedBot):
 
     @staticmethod
     async def on_shard_connect(shard_id):
-        print(f"[{BOT_NAME}] Shard {shard_id+1}/{SHARDS} connected to the Discord API.")
+        print(f"[{BOT_NAME}] Shard {shard_id + 1}/{SHARDS} connected to the Discord API.")
 
     @staticmethod
     async def on_shard_disconnect(shard_id):
-        print(f"[{BOT_NAME}] Shard {shard_id+1}/{SHARDS} disconnected from the Discord API.")
+        print(f"[{BOT_NAME}] Shard {shard_id + 1}/{SHARDS} disconnected from the Discord API.")
 
     async def on_error(self, event, *args, **kwargs):
         if event == "on_command_error":
@@ -180,6 +182,8 @@ class Bot(commands.AutoShardedBot):
                 await sleep(0.5)
             self.ready = True
             self.cogs_ready.end_loading_bar()
+
+            await bot.change_presence(activity=Activity(type=ActivityType.watching, name="Elon Musk. | ?help"))
 
             print(f"[{BOT_NAME}] The bot is ready to use. (TOTAL SHARDS: {SHARDS})")
         else:
