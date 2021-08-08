@@ -85,6 +85,7 @@ class Bot(commands.AutoShardedBot):
         intents.members = True
 
         super().__init__(command_prefix=get_prefix, shard_count=SHARDS, owner_ids=OWNER_IDS, intents=intents)
+        self.remove_command("help")
 
     @staticmethod
     def setup():
