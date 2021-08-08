@@ -1,8 +1,10 @@
-from discord import Embed, Color
-from discord.ext.commands import command, Cog, BucketType, cooldown
-from lib.checks import general, lang, minigames
 from asyncio import sleep
 from random import randint
+
+from discord import Embed, Color
+from discord.ext.commands import command, Cog, BucketType, cooldown
+
+from lib.checks import general, lang, minigames
 
 COMMAND = "horse"
 
@@ -38,7 +40,7 @@ class Horse(Cog):
                 await ctx.send(lang.get_message(ctx.language, err_msg))
                 return
 
-            if self.MAX_HORSES >= user_horse > 1:
+            if self.MAX_HORSES >= user_horse >= 1:
                 general.remove_money(ctx.guild.id, ctx.author.id, bet)
             else:
                 await ctx.send(lang.get_message(ctx.language, 'CMD_NumberExceedLimit') % (1, self.MAX_HORSES))
@@ -50,10 +52,11 @@ class Horse(Cog):
             while self.LENGTH_TRACK not in horses:
                 await sleep(1.2)
                 horse = randint(1, self.MAX_HORSES)
-                horses[horse-1] += 1
+                horses[horse - 1] += 1
 
-                horse = randint(1, self.MAX_HORSES)
-                horses[horse-1] += 1
+                if horses[horse - 1] != self.LENGTH_TRACK:
+                    horse = randint(1, self.MAX_HORSES)
+                    horses[horse - 1] += 1
 
                 await message.edit(embed=self.create_embed(ctx, horses))
 
@@ -69,8 +72,8 @@ class Horse(Cog):
 
             if winning_horse == user_horse:
                 general.add_money(ctx.guild.id, ctx.author.id, int(bet*2.5))
-                desc = lang.get_message(ctx.language, 'MINIGAMES_UserWon') + f" {currency}{int(bet*2.5)}"
-                color = Color.blue()
+                desc = lang.get_message(ctx.language, 'MINIGAMES_UserWon') + f" {currency}{int(bet * 2.5)}"
+                color = Color.green()
             else:
                 desc = lang.get_message(ctx.language, 'MINIGAMES_UserLost') + f" {currency}{bet}"
                 color = Color.red()
