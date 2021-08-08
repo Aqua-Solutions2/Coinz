@@ -1,8 +1,10 @@
+from random import randint
+
 from discord import Embed, Color, Member
 from discord.ext.commands import Cog, BucketType, cooldown, group
+
 from lib.checks import general, lang
 from lib.db import db
-from random import randint
 
 COMMAND = "social"
 
@@ -38,11 +40,12 @@ class Social(Cog):
         followers = self.get_followers(ctx.guild.id, ctx.author.id)
         if followers == 0:
             await ctx.send(lang.get_message(ctx.language, 'SOCIAL_NoAccount'))
+            ctx.command.reset_cooldown(ctx)
         else:
             new_followers = randint(1, 30) if followers < 200 else randint(0, 0.2 * followers)
             new_likes = randint(1, 5) if followers < 200 else randint(0, 0.05 * followers)
             db.execute("UPDATE userData SET SocialFollowers = SocialFollowers + %s, SocialLikes = SocialLikes + %s WHERE GuildID = %s AND UserID = %s", new_followers, new_likes, ctx.guild.id, ctx.author.id)
-            await ctx.send(lang.get_message(ctx.language, 'SOCIAL_NoAccount'))
+            await ctx.send(lang.get_message(ctx.language, 'SOCIAL_Post') % (new_followers, new_likes))
 
     @social.command(name="view")
     async def view(self, ctx, member: Member = None):
