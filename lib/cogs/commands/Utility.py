@@ -1,9 +1,10 @@
+import time
+from datetime import datetime
+from platform import python_version
+
 from discord import Embed, __version__, Color
 from discord.ext.commands import Cog, command, cooldown, BucketType
 from psutil import Process, virtual_memory
-from datetime import datetime
-import time
-from platform import python_version
 
 start_time = time.time()
 
@@ -27,7 +28,7 @@ class Stats(Cog):
     @command(name="ping", aliases=["uptime"])
     @cooldown(1, 5, BucketType.user)
     async def ping(self, ctx):
-        """Geeft de latency in milliseconden en de uptime van de bot weer."""
+        """Get the latency in milliseconds and the uptime of the bot."""
         responds_time_start = time.time()
         message = await ctx.send(f":radio_button: Calculating...")
         responds_time_end = time.time()
@@ -38,7 +39,7 @@ class Stats(Cog):
     @command(name="stats", aliases=["statistics"])
     @cooldown(1, 10, BucketType.user)
     async def stats(self, ctx):
-        """Geeft bepaalde informatie over de bot weer."""
+        """Get information about the bot."""
         embed = Embed(
             title="Bot Statistics",
             color=Color.blue(),
