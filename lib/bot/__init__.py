@@ -84,7 +84,7 @@ class Bot(commands.AutoShardedBot):
         intents = Intents.default()
         intents.members = True
 
-        super().__init__(command_prefix=get_prefix, shard_count=SHARDS, owner_ids=OWNER_IDS, intents=intents)
+        super().__init__(command_prefix=get_prefix, shard_count=SHARDS, owner_ids=OWNER_IDS, strip_after_prefix=True, intents=intents)
         self.remove_command("help")
 
     @staticmethod
@@ -92,8 +92,9 @@ class Bot(commands.AutoShardedBot):
         for cog in COGS:
             try:
                 bot.load_extension(f'lib.cogs.{cog}')
-            except Exception:
+            except Exception as e:
                 print(f"[{BOT_NAME}] Cog {cog}: Error occured while trying to load cog.")
+                print(e)
 
     def update_db(self):
         db.multiexec("INSERT IGNORE INTO guilds (GuildID) VALUES (%s)", ((guild.id,) for guild in self.guilds))
