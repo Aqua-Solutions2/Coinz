@@ -1,10 +1,12 @@
+from asyncio import TimeoutError
+from math import ceil
+from random import randint
+from typing import Optional
+
 from discord import Member, Embed, Color
 from discord.ext.commands import Cog, command, cooldown, BucketType, CooldownMapping
-from random import randint
+
 from lib.db import db
-from typing import Optional
-from math import ceil
-from asyncio import TimeoutError
 
 
 class Experience(Cog):
@@ -77,6 +79,7 @@ class Experience(Cog):
     @command()
     @cooldown(1, 5, BucketType.user)
     async def rank(self, ctx, member: Optional[Member]):
+        """Displays the current level a member is."""
         member = member or ctx.author
 
         user = db.record("SELECT UserID FROM userData WHERE GuildID = %s AND UserID = %s", ctx.guild.id, ctx.author.id)
@@ -99,6 +102,7 @@ class Experience(Cog):
     @command()
     @cooldown(1, 5, BucketType.user)
     async def levels(self, ctx, page: int = 1):
+        """Displays a leaderboard with 20 users per page."""
         records_per_page = 20
         offset = (page - 1) * records_per_page
 

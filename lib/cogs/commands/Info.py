@@ -20,6 +20,7 @@ class InfoCmds(Cog):
     @command(name="user-info", aliases=["userinfo", "memberinfo", "member-info"])
     @cooldown(1, 10, BucketType.user)
     async def user_info(self, ctx, member: Member = None):
+        """Get a lot of information about a member."""
         member = member or ctx.author
         general.create_row(ctx.guild.id, member.id)
         user_data = db.record("SELECT * FROM userData WHERE GuildID = %s AND UserID = %s", ctx.guild.id, member.id)
@@ -40,6 +41,7 @@ class InfoCmds(Cog):
     @command(name="guild-info", aliases=["guildinfo", "server-info", "serverinfo"])
     @cooldown(1, 10, BucketType.guild)
     async def guild_info(self, ctx):
+        """Get general information about this server."""
         guild_data = db.record("SELECT * FROM guilds WHERE GuildID = %s", ctx.guild.id)
         total = db.column("SELECT Netto FROM userData WHERE GuildID = %s", ctx.guild.id)
 

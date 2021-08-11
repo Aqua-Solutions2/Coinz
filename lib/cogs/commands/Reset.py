@@ -1,7 +1,9 @@
-from discord.ext.commands import Cog, command, cooldown, BucketType
 from asyncio import TimeoutError
-from lib.db import db
+
+from discord.ext.commands import Cog, command, cooldown, BucketType
+
 from lib.checks import lang
+from lib.db import db
 
 
 class ResetCmd(Cog):
@@ -13,6 +15,7 @@ class ResetCmd(Cog):
     @command(name="reset")
     @cooldown(1, 60, BucketType.guild)
     async def reset_(self, ctx):
+        """Reset specific data from your server."""
         await ctx.send(lang.get_message(ctx.language, 'RESET_General') % ", ".join(self.VALID_MESSAGES))
 
         def check(m):
