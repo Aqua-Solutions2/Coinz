@@ -60,6 +60,7 @@ class Bot(commands.AutoShardedBot):
     WEBSITE = "https://www.coinzbot.xyz/"
     TABLES = ["guildPayouts", "guildWorkPayouts", "guilds", "userData"]
     MIN_BET = 100
+    COMMANDS = []
 
     def __init__(self):
         self.PREFIX = PREFIX
@@ -184,6 +185,16 @@ class Bot(commands.AutoShardedBot):
                 await sleep(0.5)
             self.ready = True
             self.cogs_ready.end_loading_bar()
+
+            for cmd in self.commands:
+                if not cmd.aliases:
+                    new_cmd = cmd.name
+                else:
+                    new_cmd = {
+                        "name": cmd.name.lower(),
+                        "aliases": [alias.lower() for alias in cmd.aliases]
+                    }
+                self.COMMANDS.append(new_cmd)
 
             await bot.change_presence(activity=Activity(type=ActivityType.watching, name="Elon Musk. | ?help"))
 
