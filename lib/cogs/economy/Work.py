@@ -1,12 +1,13 @@
+from asyncio import TimeoutError
+from random import choice, shuffle, randint
+from time import sleep
+
 from discord import Embed, Color
 from discord.ext.commands import command, Cog, BucketType, cooldown
+from essential_generators import DocumentGenerator
+
 from lib.checks import general, lang
 from lib.db import db
-from random import choice, shuffle, randint
-from asyncio import TimeoutError
-from time import sleep
-from essential_generators import DocumentGenerator
-from RandomWordGenerator import RandomWord
 
 COMMAND = "work"
 
@@ -14,12 +15,16 @@ COMMAND = "work"
 jobs = ["guess_the_word", "math_calc", "remember"]
 
 gen = DocumentGenerator()
-r = RandomWord(max_word_size=15)
 
 
 class Work(Cog):
     def __init__(self, bot):
         self.bot = bot
+
+        file = open(f'data/extra/word_list.txt', 'r')
+        words = file.readlines()
+        file.close()
+        self.words = [x.replace('\n', '') for x in words]
 
     def create_embed(self, ctx, desc, color=Color.blue()):
         embed = Embed(description=desc, color=color)
@@ -29,7 +34,7 @@ class Work(Cog):
 
     async def wait_for_message(self, ctx, content, timeout):
         def check(message):
-            return message.author == ctx.author and message.content.lower() == content.lower() or ctx.author.id in self.bot.owner_ids and message.content.lower() == "success"
+            return message.author == ctx.author and message.content.lower() == content.lower()
 
         try:
             await self.bot.wait_for("message", timeout=timeout, check=check)
@@ -39,7 +44,7 @@ class Work(Cog):
 
     async def guess_the_word(self, ctx):
         timeout = 30
-        word = r.generate()
+        word = choice(self.words)
 
         word_list = list(word.lower())
         shuffle(word_list)
@@ -85,7 +90,7 @@ class Work(Cog):
             return None
 
     @command(name="work")
-    @cooldown(1, 5, BucketType.user)
+    @cooldown(1, 3600, BucketType.user)
     async def work(self, ctx):
         if general.check_status(ctx.guild.id, COMMAND):
             payout = general.get_payout(ctx.guild.id, COMMAND)
