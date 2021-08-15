@@ -1,6 +1,5 @@
 from asyncio import TimeoutError
 from math import ceil
-from random import randint
 from typing import Optional
 
 from discord import Member, Embed, Color
@@ -13,14 +12,6 @@ class Experience(Cog):
     def __init__(self, bot):
         self.bot = bot
         self.cd_mapping = CooldownMapping.from_cooldown(1, 60, BucketType.member)
-
-    @staticmethod
-    def add_xp(xp, guild_id, member_id):
-        db.execute("UPDATE userData SET Experience = Experience + %s, Messages = Messages + 1 WHERE GuildID = %s AND UserID = %s", xp, guild_id, member_id)
-
-    @staticmethod
-    def check_lvl(xp):
-        return int((xp // 42) ** 0.55)
 
     def generate_rows(self, guild_id, records_per_page, offset, header_columns):
         userdata = db.records(f"SELECT * FROM userData WHERE GuildID = %s ORDER BY Experience DESC LIMIT {records_per_page} OFFSET {offset}", guild_id)
@@ -59,22 +50,6 @@ class Experience(Cog):
         )
         embed.set_footer(text=f"{self.bot.FOOTER} | Pagina {current_page}/{max_pages}")
         return embed
-
-    @Cog.listener()
-    async def on_message(self, message):
-        if not message.author.bot:
-            user = db.record("SELECT UserID FROM userData WHERE GuildID = %s AND UserID = %s", message.guild.id, message.author.id)
-
-            if user is None:
-                db.execute("INSERT IGNORE userData (GuildID, UserID) VALUES (%s, %s)", message.guild.id, message.author.id)
-
-            self.add_xp(randint(7, 15), message.guild.id, message.author.id)
-
-            new_xp, old_lvl = db.record("SELECT Experience, XpLevel FROM userData WHERE GuildID = %s AND UserID = %s", message.guild.id, message.author.id)
-            new_lvl = self.check_lvl(new_xp)
-
-            if new_lvl > old_lvl:
-                db.execute("UPDATE userData SET XpLevel = %s WHERE GuildID = %s AND UserID = %s", new_lvl, message.guild.id, message.author.id)
 
     @command()
     @cooldown(1, 5, BucketType.user)
@@ -150,8 +125,7 @@ class Experience(Cog):
                         await message.edit(embed=embed)
                 except TimeoutError:
                     break
-            await message.clear_reaction("◀️")
-            await message.clear_reaction("▶️")
+            await message.clear_reactions()
 
     @Cog.listener()
     async def on_ready(self):
