@@ -1,7 +1,8 @@
-from lib.db import db
-from lib.checks import general
-from string import hexdigits
 from random import choice
+from string import hexdigits
+
+from lib.checks import general
+from lib.db import db
 
 
 def general_checks(guild_id, user_id, bet, command, member_id=0):
@@ -27,7 +28,7 @@ def get_bets(guild_id, command):
     bets = general.get_value(command.lower(), all_bets[0])
     bet = bets.split(',')
 
-    if bet[0] == 0:
+    if int(bet[0]) == 0:
         bet[0] = 100
 
     return int(bet[0]), int(bet[1])
