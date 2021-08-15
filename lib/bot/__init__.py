@@ -158,6 +158,9 @@ class Bot(commands.AutoShardedBot):
             else:
                 time_formatted = time.strftime('%-Hh %-Mm %-Ss', time.gmtime(cooldown))
             await ctx.send(":x: " + lang.get_message(ctx.language, 'ERR_OnCooldown') % time_formatted)
+        elif isinstance(error, commands.BadArgument):
+            prefix = db.record("SELECT Prefix FROM guilds WHERE GuildID = %s", ctx.guild.id)
+            await ctx.send(lang.get_message(ctx.language, 'ERR_InvalidArgumentsSpecific') % f"{prefix[0]}help {ctx.command}")
         elif isinstance(error, commands.CheckFailure):
             print("checkfailure")
         elif isinstance(error, commands.MissingRequiredArgument):
