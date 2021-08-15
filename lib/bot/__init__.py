@@ -4,6 +4,7 @@ from asyncio import sleep
 from datetime import datetime
 from glob import glob
 from pathlib import Path
+from random import randint
 
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from discord import Intents, ActivityType, Activity
@@ -128,6 +129,15 @@ class Bot(commands.AutoShardedBot):
                 db.execute("INSERT IGNORE INTO guilds (GuildID) VALUES (%s)", ctx.guild.id)
                 db.execute("INSERT IGNORE INTO guildPayouts (GuildID) VALUES (%s)", ctx.guild.id)
                 general.create_row(ctx.guild.id, ctx.author.id)
+
+                db.execute("UPDATE userData SET Experience = Experience + %s, Messages = Messages + 1 WHERE GuildID = %s AND UserID = %s", randint(7, 15), ctx.guild.id, ctx.author.id)
+
+                new_xp, old_lvl = db.record("SELECT Experience, XpLevel FROM userData WHERE GuildID = %s AND UserID = %s", message.guild.id, message.author.id)
+                new_lvl = int((new_xp // 42) ** 0.55)
+
+                if new_lvl > old_lvl:
+                    db.execute("UPDATE userData SET XpLevel = %s WHERE GuildID = %s AND UserID = %s", new_lvl, message.guild.id, message.author.id)
+
                 await self.invoke(ctx)
 
     @staticmethod
