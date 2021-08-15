@@ -1,9 +1,11 @@
+import json
+from asyncio import TimeoutError
+from random import choice
+
 from discord import Embed, Color
 from discord.ext.commands import command, Cog, BucketType, cooldown
+
 from lib.checks import general, lang, minigames
-from random import choice
-from asyncio import TimeoutError
-import json
 
 COMMAND = "blackjack"
 
@@ -90,9 +92,9 @@ class Blackjack(Cog):
             color = Color.blue()
             general.add_money(ctx.guild.id, ctx.author.id, bet)
         else:
-            desc = lang.get_message(ctx.language, 'BLACKJACK_WinMessage') % (currency, int(bet*1.5))
+            desc = lang.get_message(ctx.language, 'BLACKJACK_WinMessage') % (currency, int(bet * 1.5))
             color = Color.green()
-            general.add_money(ctx.guild.id, ctx.author.id, int(bet*1.5))
+            general.add_money(ctx.guild.id, ctx.author.id, int(bet * 1.5))
         return desc, color
 
     def finish_dealer_cards(self, dealer_cards, dealer_values):
