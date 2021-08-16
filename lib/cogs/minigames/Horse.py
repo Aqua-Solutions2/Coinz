@@ -32,7 +32,12 @@ class Horse(Cog):
 
     @command(name="horse", aliases=["horse-race"])
     @cooldown(4, 3600, BucketType.user)
-    async def horse(self, ctx, bet: int, user_horse: int):
+    async def horse(self, ctx, bet: int, horse: int):
+        """
+        Bet on a horse and hope it wins the race!
+        /Examples/ `horse 500 1`\n`horse 500 5`
+        /Bet Range/ Min: %CURRENCY%%MIN%\nMax: %CURRENCY%%MAX%
+        """
         if general.check_status(ctx.guild.id, COMMAND):
             err_msg = minigames.general_checks(ctx.guild.id, ctx.author.id, bet, COMMAND)
 
@@ -40,7 +45,7 @@ class Horse(Cog):
                 await ctx.send(lang.get_message(ctx.language, err_msg))
                 return
 
-            if self.MAX_HORSES >= user_horse >= 1:
+            if self.MAX_HORSES >= horse >= 1:
                 general.remove_money(ctx.guild.id, ctx.author.id, bet)
             else:
                 await ctx.send(lang.get_message(ctx.language, 'CMD_NumberExceedLimit') % (1, self.MAX_HORSES))
@@ -51,12 +56,12 @@ class Horse(Cog):
 
             while self.LENGTH_TRACK not in horses:
                 await sleep(1.2)
-                horse = randint(1, self.MAX_HORSES)
-                horses[horse - 1] += 1
+                horse_ = randint(1, self.MAX_HORSES)
+                horses[horse_ - 1] += 1
 
-                if horses[horse - 1] != self.LENGTH_TRACK:
-                    horse = randint(1, self.MAX_HORSES)
-                    horses[horse - 1] += 1
+                if horses[horse_ - 1] != self.LENGTH_TRACK:
+                    horse_ = randint(1, self.MAX_HORSES)
+                    horses[horse_ - 1] += 1
 
                 await message.edit(embed=self.create_embed(ctx, horses))
 
@@ -64,14 +69,14 @@ class Horse(Cog):
 
             horse_number = 1
             winning_horse = 0
-            for horse in horses:
-                if horse == self.LENGTH_TRACK:
+            for horse_ in horses:
+                if horse_ == self.LENGTH_TRACK:
                     winning_horse = horse_number
                     break
                 horse_number += 1
 
-            if winning_horse == user_horse:
-                general.add_money(ctx.guild.id, ctx.author.id, int(bet*2.5))
+            if winning_horse == horse:
+                general.add_money(ctx.guild.id, ctx.author.id, int(bet * 2.5))
                 desc = lang.get_message(ctx.language, 'MINIGAMES_UserWon') + f" {currency}{int(bet * 2.5)}"
                 color = Color.green()
             else:
