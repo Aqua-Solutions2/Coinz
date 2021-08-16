@@ -105,6 +105,12 @@ class Blackjack(Cog):
     @command(name="blackjack", aliases=["bj"])
     @cooldown(4, 3600, BucketType.user)
     async def blackjack(self, ctx, bet: int):
+        """
+        Play a game of blackjack to get some money. Blackjack pays 3 to 2.
+        To win the game you have to beat the dealer's hand, without getting over 21 in total.
+        /Example/ `blackjack 500`
+        /Bet Range/ Min: %CURRENCY%%MIN%\nMax: %CURRENCY%%MAX%
+        """
         if general.check_status(ctx.guild.id, COMMAND):
             currency = general.get_currency(ctx.guild.id)
             err_msg = minigames.general_checks(ctx.guild.id, ctx.author.id, bet, COMMAND)
