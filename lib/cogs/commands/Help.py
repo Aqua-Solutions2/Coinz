@@ -39,6 +39,9 @@ class HelpCmd(Cog):
         for field in fields:
             embed.add_field(name=field['name'], value=field['value'], inline=False)
 
+        if cmd.brief is not None:
+            embed.set_image(url=cmd.brief)
+
         embed.set_footer(text=self.bot.FOOTER)
         embed.set_author(name=f"Help: {str(cmd).title()}", icon_url=f"{self.bot.user.avatar_url}")
         return embed
@@ -47,7 +50,7 @@ class HelpCmd(Cog):
     def get_payouts(table, cmd, guild_id):
         try:
             payouts = db.record(f"SELECT {table} FROM guildPayouts WHERE GuildID = %s", guild_id)
-            payout = general.get_value(str(cmd).lower(), payouts[0])
+            payout = general.get_value(str(cmd).replace('-', '').lower(), payouts[0])
             payout = payout.split(',')
             return payout[0], payout[1]
         except Exception:
