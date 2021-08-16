@@ -1,5 +1,6 @@
 from discord import Embed, Color
 from discord.ext.commands import command, Cog, BucketType, cooldown
+
 from lib.checks import general, lang
 
 COMMAND = "crime"
@@ -12,6 +13,12 @@ class Crime(Cog):
     @command()
     @cooldown(1, 43200, BucketType.user)
     async def crime(self, ctx):
+        """
+        Want to live a live of crime?
+        Take your chances to win a lot of money.
+        /Payout/ Min: %CURRENCY%%MIN%\nMax: %CURRENCY%%MAX%
+        /Risk/ %FAIL% to fail.
+        """
         if general.check_status(ctx.guild.id, COMMAND):
             payout = general.get_payout(ctx.guild.id, COMMAND)
 
