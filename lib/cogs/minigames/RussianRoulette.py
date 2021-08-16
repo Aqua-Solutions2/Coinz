@@ -1,8 +1,10 @@
+from asyncio import TimeoutError, sleep
+from random import randint
+
 from discord import Embed, Color
 from discord.ext.commands import command, Cog, BucketType, cooldown
+
 from lib.checks import general, lang, minigames
-from random import randint
-from asyncio import TimeoutError, sleep
 
 COMMAND = "RussianRoulette"
 EMOTES = ["❌", "🔫"]
@@ -23,6 +25,11 @@ class RussianRoulette(Cog):
     @command(name="russian-roulette", aliases=["rroulette", "rr"])
     @cooldown(3, 3600, BucketType.user)
     async def russian_roulette(self, ctx, bet: int):
+        """
+        Keep risking your life to earn money in Russian Roulette.
+        /Example/ `russian-roulette 500`
+        /Bet Range/ Min: %CURRENCY%%MIN%\nMax: %CURRENCY%%MAX%
+        """
         if general.check_status(ctx.guild.id, COMMAND.lower()):
             err_msg = minigames.general_checks(ctx.guild.id, ctx.author.id, bet, COMMAND.lower())
 
