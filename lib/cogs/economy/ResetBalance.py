@@ -15,6 +15,7 @@ class ResetBalance(Cog):
     @command(name="reset-account", aliases=["resetaccount", "resetacc", "racc"])
     @cooldown(1, 10, BucketType.user)
     async def reset_account(self, ctx):
+        """Reset your entire account and start from 0."""
         message = await ctx.send(lang.get_message(ctx.language, 'RESET_Account') % emote)
         await message.add_reaction(emote)
 
