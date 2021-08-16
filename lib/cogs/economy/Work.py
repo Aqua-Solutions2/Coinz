@@ -92,6 +92,11 @@ class Work(Cog):
     @command(name="work")
     @cooldown(1, 3600, BucketType.user)
     async def work(self, ctx):
+        """
+        Work as a normal person to get rich.
+        /Payout/ %JOBS%
+        /Requirements/ A job.
+        """
         if general.check_status(ctx.guild.id, COMMAND):
             payout = general.get_payout(ctx.guild.id, COMMAND)
             currency = general.get_currency(ctx.guild.id)
