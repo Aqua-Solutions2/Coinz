@@ -1,5 +1,6 @@
 from discord import Embed, Color
 from discord.ext.commands import command, Cog, BucketType, cooldown
+
 from lib.checks import general, lang
 
 COMMAND = "fish"
@@ -12,6 +13,12 @@ class Fish(Cog):
     @command(name='fish')
     @cooldown(1, 21600, BucketType.user)
     async def fish(self, ctx):
+        """
+        Catch some fish and sell them for Coins!
+        Buy a fishing rod in the shop today!
+        /Payout/ Min: %CURRENCY%%MIN%\nMax: %CURRENCY%%MAX%
+        /Requirements/ Fishing Rod
+        """
         if general.check_status(ctx.guild.id, COMMAND):
             if general.has_failed(ctx.guild.id, COMMAND):
                 embed = Embed(
