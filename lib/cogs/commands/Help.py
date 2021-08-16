@@ -10,6 +10,9 @@ class HelpCmd(Cog):
         self.bot = bot
 
     def create_embed(self, ctx, cmd):
+        if cmd.help == "HIDDEN":
+            return None
+
         prefix = db.record("SELECT Prefix FROM guilds WHERE GuildID = %s", ctx.guild.id)
 
         if cmd.help is None:
@@ -112,7 +115,12 @@ class HelpCmd(Cog):
             if cog_cmd is None:
                 await ctx.send(lang.get_message(ctx.language, 'HELP_404'))
             else:
-                await ctx.send(embed=self.create_embed(ctx, cog_cmd))
+                embed = self.create_embed(ctx, cog_cmd)
+
+                if embed is not None:
+                    await ctx.send(embed=embed)
+                else:
+                    await ctx.send(lang.get_message(ctx.language, 'HELP_404'))
 
     @Cog.listener()
     async def on_ready(self):
