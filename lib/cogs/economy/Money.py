@@ -1,5 +1,6 @@
 from discord import Embed, Color, Member
 from discord.ext.commands import command, Cog, BucketType, cooldown
+
 from lib.checks import general, lang
 from lib.db import db
 
@@ -40,6 +41,7 @@ class Money(Cog):
     @command(name="account", aliases=["balance", "bal"])
     @cooldown(1, 5, BucketType.user)
     async def account(self, ctx, member: Member = None):
+        """View your account balance and see how much cash|bank|total you have."""
         member = member or ctx.author
         userdata = db.record("SELECT * FROM userData WHERE GuildID = %s AND UserID = %s", ctx.guild.id, member.id)
         await self.print_account_balance(ctx, member, general.get_currency(ctx.guild.id), userdata[3], userdata[4], userdata[3]+userdata[4])
@@ -47,6 +49,10 @@ class Money(Cog):
     @command(name="deposit", aliases=["dep"])
     @cooldown(1, 5, BucketType.user)
     async def deposit(self, ctx, amount):
+        """
+        Deposit cash into your bank account.
+        /Extra/ Amount can be a number or `all`. All means that you want to select all money you have.
+        """
         cash = db.record("SELECT cash FROM userData WHERE GuildID = %s AND UserID = %s", ctx.guild.id, ctx.author.id)
 
         money = await self.calculate_money(ctx, amount, cash[0])
@@ -59,6 +65,10 @@ class Money(Cog):
     @command(name="withdraw", aliases=["with"])
     @cooldown(1, 5, BucketType.user)
     async def withdraw(self, ctx, amount):
+        """
+        Withdraw cash from your bank account.
+        /Extra/ Amount can be a number or `all`. All means that you want to select all money you have.
+        """
         bank = db.record("SELECT bank FROM userData WHERE GuildID = %s AND UserID = %s", ctx.guild.id, ctx.author.id)
 
         money = await self.calculate_money(ctx, amount, bank[0])
@@ -71,6 +81,10 @@ class Money(Cog):
     @command(name="pay", aliases=["give-money"])
     @cooldown(1, 5, BucketType.user)
     async def pay(self, ctx, member: Member, amount):
+        """
+        Pay someone some cash.
+        /Extra/ Amount can be a number or `all`. All means that you want to select all money you have.
+        """
         if general.check_status(ctx.guild.id, "pay"):
             cash_author = db.record("SELECT cash FROM userData WHERE GuildID = %s AND UserID = %s", ctx.guild.id, ctx.author.id)
 
