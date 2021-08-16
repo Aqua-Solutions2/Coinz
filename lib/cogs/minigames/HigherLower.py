@@ -33,6 +33,11 @@ class HigherLower(Cog):
     @command(name="higherlower", aliases=['hl', 'highlow'])
     @cooldown(4, 3600, BucketType.user)
     async def higherlower(self, ctx, bet: int):
+        """
+        Will the next number be higher or lower than the previous one?
+        /Examples/ `higherlower 500`
+        /Bet Range/ Min: %CURRENCY%%MIN%\nMax: %CURRENCY%%MAX%
+        """
         if general.check_status(ctx.guild.id, COMMAND):
             err_msg = minigames.general_checks(ctx.guild.id, ctx.author.id, bet, COMMAND)
 
