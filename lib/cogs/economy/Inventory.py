@@ -1,5 +1,6 @@
 from discord import Embed, Color, Member
 from discord.ext.commands import command, Cog, BucketType, cooldown
+
 from lib.checks import general, lang
 from lib.db import db
 
@@ -11,6 +12,7 @@ class Inventory(Cog):
     @command(name='inventory', aliases=["inv"])
     @cooldown(1, 5, BucketType.user)
     async def inventory(self, ctx, member: Member = None):
+        """Check someone's inventory to see what they have."""
         member = member or ctx.author
 
         inv = db.record("SELECT Inventory FROM userData WHERE GuildID = %s AND UserID = %s", ctx.guild.id, member.id)
