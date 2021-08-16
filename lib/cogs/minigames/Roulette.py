@@ -1,8 +1,10 @@
+from asyncio import sleep
+from random import randint
+
 from discord import Embed, Color
 from discord.ext.commands import command, Cog, BucketType, cooldown
+
 from lib.checks import general, lang, minigames
-from random import randint
-from asyncio import sleep
 
 COMMAND = "roulette"
 
@@ -11,9 +13,15 @@ class Roulette(Cog):
     def __init__(self, bot):
         self.bot = bot
 
-    @command(name="roulette")
+    @command(name="roulette", brief="https://i.imgur.com/VsHPgul.png")
     @cooldown(2, 3600, BucketType.user)
     async def roulette(self, ctx, bet: int, space):
+        """
+        Gamble your way up to the top.
+        /Examples/ `roulette 500 black`\n`roulette 500 2nd`\n`roulette 500 12`
+        /Bet Range/ Min: %CURRENCY%%MIN%\nMax: %CURRENCY%%MAX%
+        /Multipliers/ x36 - Single number\nx3 - Dozens (1-12, 13-24, 25-36)\nx3 - Columns (1st, 2nr, 3rd)\nx2 - Halves (1-18, 19-36)\nx2 - Odd/Even\nx2 - Color (red, black)
+        """
         if general.check_status(ctx.guild.id, COMMAND):
             err_msg = minigames.general_checks(ctx.guild.id, ctx.author.id, bet, COMMAND)
 
