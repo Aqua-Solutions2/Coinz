@@ -1,8 +1,10 @@
+from asyncio import TimeoutError
+from random import randint
+
 from discord import Embed, Color
 from discord.ext.commands import command, Cog, BucketType, cooldown
+
 from lib.checks import general, lang, minigames
-from random import randint
-from asyncio import TimeoutError
 
 COMMAND = "crash"
 
@@ -22,6 +24,11 @@ class Crash(Cog):
     @command(name="crash")
     @cooldown(3, 3600, BucketType.user)
     async def crash(self, ctx, bet: int):
+        """
+        Are you fast enough to stop before it crashes?
+        /Examples/ `crash 500`
+        /Bet Range/ Min: %CURRENCY%%MIN%\nMax: %CURRENCY%%MAX%
+        """
         if general.check_status(ctx.guild.id, COMMAND):
             err_msg = minigames.general_checks(ctx.guild.id, ctx.author.id, bet, COMMAND)
 
