@@ -1,9 +1,11 @@
+from asyncio import TimeoutError
+from random import randint
+
+import names
 from discord import Embed, Color, Forbidden
 from discord.ext.commands import command, Cog, BucketType, cooldown
+
 from lib.checks import general, lang
-from random import randint
-import names
-from asyncio import TimeoutError
 
 COMMAND = "beg"
 emote_list = ['1️⃣', '2️⃣', '3️⃣']
@@ -16,12 +18,16 @@ class Beg(Cog):
     @command()
     @cooldown(1, 600, BucketType.user)
     async def beg(self, ctx):
+        """
+        Ask for money from strangers. Some strangers won't give you money.
+        /Payout/ Min: %CURRENCY%%MIN%\nMax: %CURRENCY%%MAX%
+        """
         if general.check_status(ctx.guild.id, COMMAND):
             options = [names.get_first_name() for i in range(0, len(emote_list))]
             name_list = ""
 
             for i in range(0, len(emote_list)):
-                name_list += f"{i+1}. {options[i]}\n"
+                name_list += f"{i + 1}. {options[i]}\n"
 
             embed = Embed(
                 title=f"{COMMAND.title()}",
