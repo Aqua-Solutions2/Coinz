@@ -1,8 +1,10 @@
+from asyncio import sleep
+from random import choice
+
 from discord import Embed, Color
 from discord.ext.commands import command, Cog, BucketType, cooldown
+
 from lib.checks import general, lang, minigames
-from random import choice
-from asyncio import sleep
 
 COMMAND = "slots"
 
@@ -30,6 +32,12 @@ class Slots(Cog):
     @command(name="slots", aliases=["slot-machine"])
     @cooldown(2, 3600, BucketType.user)
     async def slots(self, ctx, bet: int):
+        """
+        Try your luck on the slot machines.
+        /Example/ `slots 500`
+        /Bet Range/ Min: %CURRENCY%%MIN%\nMax: %CURRENCY%%MAX%
+        /Multipliers/ 3x - 💯\n5x - 💰\n6x - 💵\n7x - 🥇\n9x - 💎
+        """
         if general.check_status(ctx.guild.id, COMMAND):
             err_msg = minigames.general_checks(ctx.guild.id, ctx.author.id, bet, COMMAND)
 
