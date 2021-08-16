@@ -45,27 +45,30 @@ class HelpCmd(Cog):
 
     @staticmethod
     def get_payouts(table, cmd, guild_id):
-        payouts = db.record(f"SELECT {table} FROM guildPayouts WHERE GuildID = %s", guild_id)
-        payout = general.get_value(str(cmd).lower(), payouts[0])
-        payout = payout.split(',')
-        return payout[0], payout[1]
+        try:
+            payouts = db.record(f"SELECT {table} FROM guildPayouts WHERE GuildID = %s", guild_id)
+            payout = general.get_value(str(cmd).lower(), payouts[0])
+            payout = payout.split(',')
+            return payout[0], payout[1]
+        except Exception:
+            return 0, 0
 
     def replace_placeholders(self, guild_id, cmd, value):
         currency = db.record("SELECT Currency FROM guilds WHERE GuildID = %s", guild_id)
+        value = value.replace('%CURRENCY%', f'{currency[0]}')
 
         failrates = db.record("SELECT Failrates FROM guilds WHERE GuildID = %s", guild_id)
         failrate = general.get_value(str(cmd).lower(), failrates[0])
+        value = value.replace('%FAIL%', f'{failrate}%')
 
         if str(cmd).lower() in ['beg', 'crime', 'fish']:
             min_payout, max_payout = self.get_payouts("Payouts", cmd, guild_id)
         else:
             min_payout, max_payout = self.get_payouts("PayoutsCasino", cmd, guild_id)
             min_payout = self.bot.MIN_BET
-
-        value = value.replace('%CURRENCY%', f'{currency[0]}')
         value = value.replace('%MIN%', f'{min_payout}')
         value = value.replace('%MAX%', f'{max_payout}')
-        value = value.replace('%FAIL%', f'{failrate}%')
+
         value = value.replace('%JOBS%', f'COMING SOON')
         return value
 
