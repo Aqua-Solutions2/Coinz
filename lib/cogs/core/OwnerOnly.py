@@ -8,6 +8,7 @@ class OwnerCommands(Cog):
     @command(name="kill", aliases=["shutdown", "disconnect", "stop"])
     @is_owner()
     async def kill_cmd(self, ctx):
+        """HIDDEN"""
         await ctx.send("Closing connection to the Discord API. Bye...")
         await self.bot.close()
 

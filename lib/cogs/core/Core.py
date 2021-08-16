@@ -1,5 +1,6 @@
-from discord.ext.commands import Cog, command, is_owner
 from glob import glob
+
+from discord.ext.commands import Cog, command, is_owner
 
 
 class CoreFile(Cog):
@@ -12,6 +13,7 @@ class CoreFile(Cog):
     @command(name="load")
     @is_owner()
     async def load(self, ctx, cog_name: str):
+        """HIDDEN"""
         if cog_name == "*":
             self.bot.setup()
         else:
@@ -30,6 +32,7 @@ class CoreFile(Cog):
     @command(name="reload")
     @is_owner()
     async def reload(self, ctx, cog_name: str):
+        """HIDDEN"""
         if cog_name == "*":
             for cog in self.COGS:
                 try:
@@ -56,6 +59,7 @@ class CoreFile(Cog):
     @command(name="unload")
     @is_owner()
     async def unload(self, ctx, cog_name: str):
+        """HIDDEN"""
         if cog_name == "*":
             for cog in self.COGS:
                 try:
