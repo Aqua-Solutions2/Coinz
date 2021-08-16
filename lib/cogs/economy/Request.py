@@ -1,5 +1,6 @@
 from discord import Embed, Color, Member
 from discord.ext.commands import command, Cog, BucketType, cooldown
+
 from lib.checks import general, lang
 
 
@@ -13,6 +14,7 @@ class Request(Cog):
     @command(name='request', aliases=["bill"])
     @cooldown(1, 1800, BucketType.user)
     async def request(self, ctx, member: Member, amount: int):
+        """Request money from someone. If you abuse this function you will be banned from ever using the bot again."""
         if self.MAX >= amount >= self.MIN:
             currency = general.get_currency(ctx.guild.id)
             message_url = f"https://discord.com/channels/{ctx.guild.id}/{ctx.channel.id}/{ctx.message.id}"
