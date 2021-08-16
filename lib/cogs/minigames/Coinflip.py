@@ -1,8 +1,10 @@
+from asyncio import TimeoutError
+from random import choice
+
 from discord import Embed, Color, Member
 from discord.ext.commands import command, Cog, BucketType, cooldown
+
 from lib.checks import general, lang, minigames
-from random import choice
-from asyncio import TimeoutError
 
 COMMAND = "coinflip"
 
@@ -14,6 +16,11 @@ class Coinflip(Cog):
     @command(name="coinflip", aliases=["cf"])
     @cooldown(2, 3600, BucketType.user)
     async def coinflip(self, ctx, member: Member, bet: int, side: str):
+        """
+        Flip a coin and let fait decide.
+        /Examples/ `coinflip Siebe 500 head`\n`coinflip Siebe 500 tails`
+        /Bet Range/ Min: %CURRENCY%%MIN%\nMax: %CURRENCY%%MAX%
+        """
         if general.check_status(ctx.guild.id, COMMAND):
             err_msg = minigames.general_checks(ctx.guild.id, ctx.author.id, bet, COMMAND, member.id)
 
