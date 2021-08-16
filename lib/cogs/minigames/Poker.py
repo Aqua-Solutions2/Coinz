@@ -211,6 +211,12 @@ class Poker(Cog):
     @command(name="poker")
     @cooldown(3, 3600, BucketType.user)
     async def poker(self, ctx, bet: int):
+        """
+        Be a real BALR and play poker.
+        /Examples/ `poker 500`
+        /Bet Range/ Min: %CURRENCY%%MIN%\nMax: %CURRENCY%%MAX%
+        /Multipliers/ 15x - Royal Flush\n12x - Straight Flush\n10x - Four of a Kind\n8x - Full House\n6x - Flush\n4x - Straight\n3x - Three of a kind\n2x - Two Pair\n1.5x - One Pair
+        """
         if general.check_status(ctx.guild.id, COMMAND):
             currency = general.get_currency(ctx.guild.id)
             err_msg = minigames.general_checks(ctx.guild.id, ctx.author.id, bet, COMMAND)
