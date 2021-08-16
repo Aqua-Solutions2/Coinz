@@ -26,6 +26,12 @@ class Social(Cog):
     @group(name='social', aliases=["social-media"])
     @cooldown(1, 5, BucketType.user)
     async def social(self, ctx):
+        """
+        Manage your social media account.
+        /Subcommands/ `post` - Post something on your account.\n`view [member]` - View the likes and followers of someone.\n`register` - Create a social media account.\n`delete` - Delete your account.
+        /Examples/ `social view Siebe`\n`social post`\n`social register`\n`social delete`
+        /Bet Range/ Min: %CURRENCY%%MIN%\nMax: %CURRENCY%%MAX%
+        """
         if general.check_status(ctx.guild.id, COMMAND):
             if ctx.invoked_subcommand is None:
                 await ctx.send(lang.get_message(ctx.language, 'ERR_InvalidArguments'))
