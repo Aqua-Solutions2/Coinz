@@ -1,7 +1,9 @@
+from asyncio import TimeoutError
+
 from discord import Embed, Color, Member
 from discord.ext.commands import command, Cog, BucketType, cooldown
+
 from lib.checks import general, lang, minigames
-from asyncio import TimeoutError
 
 COMMAND = "Tic Tac Toe"
 
@@ -57,6 +59,11 @@ class TicTacToe(Cog):
     @command(name="tictactoe", aliases=["tic-tac-toe", "ttt"])
     @cooldown(2, 3600, BucketType.user)
     async def tictactoe(self, ctx, member: Member, bet: int):
+        """
+        Play 3x3 Tic Tac Toe against someone from the server.
+        /Example/ `tictactoe Siebe 500`
+        /Bet Range/ Min: %CURRENCY%%MIN%\nMax: %CURRENCY%%MAX%
+        """
         if general.check_status(ctx.guild.id, "tictactoe"):
             err_msg = minigames.general_checks(ctx.guild.id, ctx.author.id, bet, "tictactoe", member.id)
 
