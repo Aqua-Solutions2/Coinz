@@ -30,14 +30,12 @@ class Social(Cog):
         Manage your social media account.
         /Subcommands/ `post` - Post something on your account.\n`view [member]` - View the likes and followers of someone.\n`register` - Create a social media account.\n`delete` - Delete your account.
         /Examples/ `social view Siebe`\n`social post`\n`social register`\n`social delete`
-        /Bet Range/ Min: %CURRENCY%%MIN%\nMax: %CURRENCY%%MAX%
+        /Beta/ This command has no real purpose as of now. When the bot will be released you can get money from your likes and sell your account.
         """
         if general.check_status(ctx.guild.id, COMMAND):
             if ctx.invoked_subcommand is None:
                 await ctx.send(lang.get_message(ctx.language, 'ERR_InvalidArguments'))
-                ctx.command.reset_cooldown(ctx)
         else:
-            ctx.command.reset_cooldown(ctx)
             return
 
     @social.command(name="post")
