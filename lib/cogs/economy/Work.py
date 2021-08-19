@@ -1,20 +1,24 @@
 from asyncio import TimeoutError
+from io import BytesIO
 from random import choice, shuffle, randint
 from time import sleep
 
-from discord import Embed, Color
+from PIL import Image, ImageFont, ImageDraw
+from discord import Embed, Color, File
 from discord.ext.commands import command, Cog, BucketType, cooldown
 from essential_generators import DocumentGenerator
 
-from lib.checks import general, lang
+from lib.checks import general, lang, jobs
 from lib.db import db
 
 COMMAND = "work"
-
-# Final List: ["guess_the_word", "type_the_word", "math_calc", "multiple_choice", "remember"]
-jobs = ["guess_the_word", "math_calc", "remember"]
-
+# tasks = ["guess_the_word", "type_the_word", "math_calc", "multiple_choice", "remember"]
+tasks = ["type_the_word"]
 gen = DocumentGenerator()
+
+questions = [
+    ("What is the name for the Jewish New Year?", "d", ["Hanukkah", "Yom Kippur", "Kwanza", "Rosh Hashanah"])
+]
 
 
 class Work(Cog):
@@ -57,8 +61,27 @@ class Work(Cog):
             await msg.edit(embed=self.create_embed(ctx, lang.get_message(ctx.language, 'WORK_GuessTheWordFail') % word, Color.red()))
             return None
 
-    # async def type_the_word(self, ctx):
-    #     pass
+    async def type_the_word(self, ctx):
+        word = choice(self.words)
+        timeout = int(3 + len(word))
+
+        font = ImageFont.truetype("data/fonts/OpenSans-Regular.ttf", 60)
+        img = Image.new(mode="RGB", size=(500, 80), color=(54, 57, 63))
+
+        draw = ImageDraw.Draw(img)
+        draw.text((0, 0), word.upper(), (255, 255, 255), font=font)
+
+        buffer = BytesIO()
+        img.save(buffer, "png")
+        buffer.seek(0)
+
+        msg = await ctx.send(file=File(fp=buffer, filename="word.png"), embed=self.create_embed(ctx, lang.get_message(ctx.language, 'WORK_TypeTheWord') % timeout))
+
+        if await self.wait_for_message(ctx, word, timeout):
+            return msg
+        else:
+            await msg.edit(embed=self.create_embed(ctx, lang.get_message(ctx.language, 'WORK_TypeTheWordFail'), Color.red()))
+            return None
 
     async def math_calc(self, ctx):
         timeout = 15
@@ -72,8 +95,34 @@ class Work(Cog):
             await msg.edit(embed=self.create_embed(ctx, lang.get_message(ctx.language, 'WORK_MathCalcFail') % eval(calculation), Color.red()))
             return None
 
-    # async def multiple_choice(self, ctx):
-    #     pass
+    async def multiple_choice(self, ctx):
+        timeout = 15
+        question = choice(questions)
+
+        answers = ['a', 'b', 'c', 'd']
+
+        question_txt = f"{question[0]}\n\n"
+
+        index = 0
+        for answer in question[2]:
+            question_txt += f"({answers[index]}) {answer}\n"
+            index += 1
+
+        msg = await ctx.send(embed=self.create_embed(ctx, question_txt))
+
+        def check(message):
+            return message.author == ctx.author and message.content.lower() in answers
+
+        try:
+            m = await self.bot.wait_for("message", timeout=timeout, check=check)
+
+            if m.content.lower() == question[1]:
+                return msg
+        except TimeoutError:
+            pass
+
+        await msg.edit(embed=self.create_embed(ctx, lang.get_message(ctx.language, 'WORK_MultipleChoiceFail') % question[1], Color.red()))
+        return None
 
     async def remember(self, ctx):
         sentence = gen.sentence()
@@ -94,17 +143,24 @@ class Work(Cog):
     async def work(self, ctx):
         """
         Work as a normal person to get rich.
-        /Payout/ %JOBS%
-        /Requirements/ A job.
+        /Requirements/ A job. Use `help job` for more info.
         """
         if general.check_status(ctx.guild.id, COMMAND):
-            payout = general.get_payout(ctx.guild.id, COMMAND)
-            currency = general.get_currency(ctx.guild.id)
-            msg = await getattr(Work, choice(jobs))(self, ctx)
-
+            msg = await getattr(Work, choice(tasks))(self, ctx)
             if msg is not None:
-                await msg.edit(embed=self.create_embed(ctx, lang.get_message(ctx.language, 'WORK_Success') % (currency, payout), Color.green()))
-                db.execute("UPDATE userData SET cash = cash + %s, netto = netto + %s WHERE GuildID = %s AND UserID = %s", payout, payout, ctx.guild.id, ctx.author.id)
+                currency = general.get_currency(ctx.guild.id)
+                current_job = db.record("SELECT CurrentJob FROM userData WHERE GuildID = %s AND UserID = %s", ctx.guild.id, ctx.author.id)
+                all_jobs = jobs.get_jobs(ctx.guild.id)
+
+                for job in all_jobs:
+                    if job[2].lower() == current_job[0].lower():
+                        income = job[4]
+                        break
+                else:
+                    income = 0
+
+                await msg.edit(embed=self.create_embed(ctx, lang.get_message(ctx.language, 'WORK_Success') % (currency, income), Color.green()))
+                db.execute("UPDATE userData SET cash = cash + %s, netto = netto + %s WHERE GuildID = %s AND UserID = %s", income, income, ctx.guild.id, ctx.author.id)
 
     @Cog.listener()
     async def on_ready(self):
