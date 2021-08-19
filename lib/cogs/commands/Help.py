@@ -74,8 +74,6 @@ class HelpCmd(Cog):
             min_payout = self.bot.MIN_BET
         value = value.replace('%MIN%', f'{min_payout}')
         value = value.replace('%MAX%', f'{max_payout}')
-
-        value = value.replace('%JOBS%', f'COMING SOON')
         return value
 
     def get_command(self, cmd_name):
