@@ -1,5 +1,6 @@
 from discord import Member
 from discord.ext.commands import Cog, BucketType, cooldown, group, has_permissions
+
 from lib.checks import general, lang
 from lib.db import db
 
@@ -28,6 +29,12 @@ class AdminCommands(Cog):
     @cooldown(1, 5, BucketType.user)
     @has_permissions(administrator=True)
     async def economy(self, ctx):
+        """
+        Use Take | Give | Set or Reset to alter someone's balance.
+        /Required Permissions/ Administrator
+        /Subcommands/ `give <member> <amount> [cash | bank]` - Give a mamber some money.\n`take <member> <amount> [cash | bank]` - Take money from a member.\n`set <member> <amount> [cash | bank]` - Set the money of a member.\n`reset <member>` - Reset someone's balance..
+        /Examples/ `economy give Siebe 9999 cash`\n`economy take @Siebe 9999`\n`economy set Siebe#9999 9999 bank`\n`economy reset Siebe`
+        """
         if ctx.invoked_subcommand is None:
             await ctx.send(lang.get_message(ctx.language, 'ERR_InvalidArguments'))
 
