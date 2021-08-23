@@ -12,8 +12,7 @@ from lib.checks import general, lang, jobs
 from lib.db import db
 
 COMMAND = "work"
-# tasks = ["guess_the_word", "type_the_word", "math_calc", "multiple_choice", "remember"]
-tasks = ["type_the_word"]
+tasks = ["guess_the_word", "type_the_word", "math_calc", "multiple_choice", "remember"]
 gen = DocumentGenerator()
 
 questions = [
@@ -63,7 +62,7 @@ class Work(Cog):
 
     async def type_the_word(self, ctx):
         word = choice(self.words)
-        timeout = int(3 + len(word))
+        timeout = len(word)
 
         font = ImageFont.truetype("data/fonts/OpenSans-Regular.ttf", 60)
         img = Image.new(mode="RGB", size=(500, 80), color=(54, 57, 63))
