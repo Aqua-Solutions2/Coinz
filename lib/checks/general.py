@@ -62,9 +62,9 @@ def extra_rob(guild_id, user_id):
     return (lock * 5) + (gun * 10) + bomb
 
 
-def check_status(guild_id, command):
-    statusses = db.record(f"SELECT DisabledCommands FROM guilds WHERE GuildID = %s", guild_id)
-    return True if command.lower() not in statusses[0].split(',') else False
+def command_is_disabled(guild_id, command):
+    command_status = db.record(f"SELECT DisabledCommands FROM guilds WHERE GuildID = %s", guild_id)
+    return True if command.lower() in command_status[0].split(',') else False
 
 
 def get_currency(guild_id):
