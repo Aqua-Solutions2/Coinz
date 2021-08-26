@@ -126,19 +126,11 @@ class Bot(commands.AutoShardedBot):
             elif not self.ready:
                 await ctx.send(lang.get_message(ctx.language, "INIT_StartingUp"))
             else:
-                db.execute("INSERT IGNORE INTO guilds (GuildID) VALUES (%s)", ctx.guild.id)
-                db.execute("INSERT IGNORE INTO guildPayouts (GuildID) VALUES (%s)", ctx.guild.id)
-                general.create_row(ctx.guild.id, ctx.author.id)
-
-                db.execute("UPDATE userData SET Experience = Experience + %s, Messages = Messages + 1 WHERE GuildID = %s AND UserID = %s", randint(7, 15), ctx.guild.id, ctx.author.id)
-
-                new_xp, old_lvl = db.record("SELECT Experience, XpLevel FROM userData WHERE GuildID = %s AND UserID = %s", message.guild.id, message.author.id)
-                new_lvl = int((new_xp // 42) ** 0.55)
-
-                if new_lvl > old_lvl:
-                    db.execute("UPDATE userData SET XpLevel = %s WHERE GuildID = %s AND UserID = %s", new_lvl, message.guild.id, message.author.id)
-
-                await self.invoke(ctx)
+                if not general.command_is_disabled(ctx.guild.id, ctx.command):
+                    db.execute("INSERT IGNORE INTO guilds (GuildID) VALUES (%s)", ctx.guild.id)
+                    general.create_row(ctx.guild.id, ctx.author.id)
+                    db.execute("UPDATE userData SET Experience = Experience + %s WHERE GuildID = %s AND UserID = %s", randint(7, 15), ctx.guild.id, ctx.author.id)
+                    await self.invoke(ctx)
 
     @staticmethod
     async def on_shard_connect(shard_id):
@@ -209,7 +201,7 @@ class Bot(commands.AutoShardedBot):
                     }
                 self.COMMANDS.append(new_cmd)
 
-            await bot.change_presence(activity=Activity(type=ActivityType.watching, name="Elon Musk. | ?help"))
+            await bot.change_presence(activity=Activity(type=ActivityType.playing, name="Minecraft. | ?help"))
 
             print(f"[{BOT_NAME}] The bot is ready to use. (TOTAL SHARDS: {SHARDS})")
         else:
