@@ -11,7 +11,7 @@ from discord import Intents, ActivityType, Activity
 from discord.errors import Forbidden
 from discord.ext import commands
 
-from ..checks import general, lang
+from ..checks import general
 from ..db import db
 
 PREFIX = "?"
@@ -59,7 +59,7 @@ class Ready(object):
 class Bot(commands.AutoShardedBot):
     FOOTER = f"© {datetime.now().year} - {BOT_NAME}"
     WEBSITE = "https://www.coinzbot.xyz/"
-    TABLES = ["guildPayouts", "guildWorkPayouts", "guilds", "userData"]
+    TABLES = ["guilds", "userData", "userInventory", "userCooldowns"]
     MIN_BET = 100
     COMMANDS = []
 
@@ -122,9 +122,9 @@ class Bot(commands.AutoShardedBot):
         if ctx.command is not None and ctx.guild is not None:
             ctx.language = lang.get_lang(ctx.guild.id)
             if message.author.id in self.BLACKLIST_USERS:
-                await ctx.send(f"{lang.get_message(ctx.language, 'INIT_UserBanned')} <{self.WEBSITE}>.")
+                await ctx.send(f"You are banned from using commands. If you think this is a mistake, please contact our support here: <{self.WEBSITE}>.")
             elif not self.ready:
-                await ctx.send(lang.get_message(ctx.language, "INIT_StartingUp"))
+                await ctx.send("The bot is still starting up. Please wait a few seconds...")
             else:
                 if not general.command_is_disabled(ctx.guild.id, ctx.command):
                     db.execute("INSERT IGNORE INTO guilds (GuildID) VALUES (%s)", ctx.guild.id)
@@ -159,20 +159,20 @@ class Bot(commands.AutoShardedBot):
                 time_formatted = f"{round(cooldown, 1)}s"
             else:
                 time_formatted = time.strftime('%-Hh %-Mm %-Ss', time.gmtime(cooldown))
-            await ctx.send(":x: " + lang.get_message(ctx.language, 'ERR_OnCooldown') % time_formatted)
+            await ctx.send(":x: You have to wait %s to use this command again." % time_formatted)
         elif isinstance(error, commands.BadArgument):
             prefix = db.record("SELECT Prefix FROM guilds WHERE GuildID = %s", ctx.guild.id)
-            await ctx.send(lang.get_message(ctx.language, 'ERR_InvalidArgumentsSpecific') % f"{prefix[0]}help {ctx.command}")
+            await ctx.send(f"Invalid Arguments. Please use `{prefix[0]}help {ctx.command}` to get more information.")
         elif isinstance(error, commands.CheckFailure):
             print("checkfailure")
         elif isinstance(error, commands.MissingRequiredArgument):
             print("MissingRequiredArgument")
         elif isinstance(error, commands.MemberNotFound):
-            print("membernotfound")
+            await ctx.send("This user doesn't exist in this server.")
         elif isinstance(error, commands.ChannelNotFound):
-            print("channelnotfound")
+            await ctx.send("This channel doesn't exists in this server.")
         elif isinstance(error, commands.RoleNotFound):
-            print("rolenotfound")
+            await ctx.send("This role doesn't exists in this server.")
         elif hasattr(error, "original"):
             if isinstance(error.original, Forbidden):
                 print("forbidden")
