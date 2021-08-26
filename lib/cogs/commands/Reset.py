@@ -2,7 +2,6 @@ from asyncio import TimeoutError
 
 from discord.ext.commands import Cog, command, cooldown, BucketType, has_permissions
 
-from lib.checks import lang
 from lib.db import db
 
 
@@ -17,7 +16,7 @@ class ResetCmd(Cog):
     @cooldown(1, 60, BucketType.guild)
     async def reset_(self, ctx):
         """Reset specific data from your server."""
-        await ctx.send(lang.get_message(ctx.language, 'RESET_General') % ", ".join(self.VALID_MESSAGES))
+        await ctx.send("What do you want to reset? %s" % ", ".join(self.VALID_MESSAGES))
 
         def check(m):
             return m.author == ctx.author and m.content.lower() in self.VALID_MESSAGES
@@ -29,17 +28,15 @@ class ResetCmd(Cog):
             if option == self.VALID_MESSAGES[0]:
                 for table in self.bot.TABLES:
                     db.execute(f"DELETE FROM {table} WHERE GuildID = %s", ctx.guild.id)
-                await ctx.send(lang.get_message(ctx.language, 'RESET_All'))
+                await ctx.send("Successfully removed all data.")
             elif option == self.VALID_MESSAGES[1]:
-                db.execute(f"DELETE FROM guildPayouts WHERE GuildID = %s", ctx.guild.id)
-                db.execute(f"DELETE FROM guildWorkPayouts WHERE GuildID = %s", ctx.guild.id)
                 db.execute(f"DELETE FROM guilds WHERE GuildID = %s", ctx.guild.id)
-                await ctx.send(lang.get_message(ctx.language, 'RESET_Config'))
+                await ctx.send("Successfully removed all config data.")
             else:
                 db.execute(f"DELETE FROM userData WHERE GuildID = %s", ctx.guild.id)
-                await ctx.send(lang.get_message(ctx.language, 'RESET_UserData'))
+                await ctx.send("Successfully removed all userdata.")
         except TimeoutError:
-            await ctx.send(lang.get_message(ctx.language, 'CMD_NoResponds'))
+            await ctx.send("I got no responds. The command is cancelled.")
 
     @Cog.listener()
     async def on_ready(self):
