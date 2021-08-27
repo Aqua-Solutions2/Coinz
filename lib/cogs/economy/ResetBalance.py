@@ -2,7 +2,6 @@ from asyncio import TimeoutError
 
 from discord.ext.commands import Cog, command, cooldown, BucketType
 
-from lib.checks import lang
 from lib.db import db
 
 emote = '✅'
@@ -16,7 +15,7 @@ class ResetBalance(Cog):
     @cooldown(1, 10, BucketType.user)
     async def reset_account(self, ctx):
         """Reset your entire account and start from 0."""
-        message = await ctx.send(lang.get_message(ctx.language, 'RESET_Account') % emote)
+        message = await ctx.send("Do you want to reset all your progress? Press %s to confirm." % emote)
         await message.add_reaction(emote)
 
         def check(reaction, user):
@@ -24,10 +23,10 @@ class ResetBalance(Cog):
 
         try:
             await self.bot.wait_for('reaction_add', timeout=15.0, check=check)
-            await ctx.send(lang.get_message(ctx.language, 'RESET_AccountSuccess'))
+            await ctx.send("Your account has been reset.")
             db.execute("DELETE FROM userData WHERE GuildID = %s AND UserID = %s", ctx.guild.id, ctx.author.id)
         except TimeoutError:
-            await ctx.send(lang.get_message(ctx.language, 'CMD_NoResponds'))
+            await ctx.send("I got no responds. The command is cancelled.")
 
     @Cog.listener()
     async def on_ready(self):
