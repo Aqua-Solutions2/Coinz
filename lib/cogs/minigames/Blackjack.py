@@ -111,7 +111,7 @@ class Blackjack(Cog):
         /Example/ `blackjack 500`
         """
         currency = general.get_currency(ctx.guild.id)
-        err_msg = minigames.general_checks(ctx.guild.id, ctx.author.id, bet, COMMAND)
+        err_msg = minigames.general_checks(ctx.guild.id, ctx.author.id, bet)
 
         if err_msg is not None:
             await ctx.send(err_msg)

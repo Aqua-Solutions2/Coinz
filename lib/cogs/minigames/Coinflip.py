@@ -20,7 +20,7 @@ class Coinflip(Cog):
         Flip a coin and let fait decide.
         /Examples/ `coinflip Siebe 500 head`\n`coinflip Siebe 500 tails`
         """
-        err_msg = minigames.general_checks(ctx.guild.id, ctx.author.id, bet, COMMAND, member.id)
+        err_msg = minigames.general_checks(ctx.guild.id, ctx.author.id, bet, member.id)
 
         if err_msg is not None:
             await ctx.send(err_msg)
@@ -51,7 +51,7 @@ class Coinflip(Cog):
             await self.bot.wait_for('message', check=check, timeout=60)
 
             general.create_row(ctx.guild.id, member.id)
-            err_msg = minigames.general_checks(ctx.guild.id, member.id, bet, COMMAND)
+            err_msg = minigames.general_checks(ctx.guild.id, member.id, bet)
 
             if err_msg is not None:
                 await ctx.send(err_msg)

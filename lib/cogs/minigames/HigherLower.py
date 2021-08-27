@@ -37,7 +37,7 @@ class HigherLower(Cog):
         Will the next number be higher or lower than the previous one?
         /Examples/ `higherlower 500`
         """
-        err_msg = minigames.general_checks(ctx.guild.id, ctx.author.id, bet, COMMAND)
+        err_msg = minigames.general_checks(ctx.guild.id, ctx.author.id, bet)
 
         if err_msg is not None:
             await ctx.send(err_msg)
