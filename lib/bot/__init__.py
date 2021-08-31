@@ -120,7 +120,6 @@ class Bot(commands.AutoShardedBot):
         ctx = await self.get_context(message, cls=commands.Context)
 
         if ctx.command is not None and ctx.guild is not None:
-            ctx.language = lang.get_lang(ctx.guild.id)
             if message.author.id in self.BLACKLIST_USERS:
                 await ctx.send(f"You are banned from using commands. If you think this is a mistake, please contact our support here: <{self.WEBSITE}>.")
             elif not self.ready:

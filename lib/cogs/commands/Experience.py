@@ -29,7 +29,7 @@ class Experience(Cog):
                 member = self.bot.get_user(user[2])
             except Exception:
                 db.execute("DELETE FROM userData WHERE GuildID = %s and UserID = %s", guild_id, user[2])
-                member = "Onbekend#0000"
+                member = user[2]
 
             nr_spacing = " " * (len(header_columns[0]) - len(str(nummer)) - 1)
             xp_spacing = " " * (len(header_columns[1]) - len(str(xp)))
@@ -44,7 +44,7 @@ class Experience(Cog):
 
     def create_embed(self, header, langste_row, rows, guild, current_page, max_pages):
         embed = Embed(
-            title=f"Levels Scoreboard van {guild}",
+            title=f"Scoreboard of {guild}",
             description=f"```md\n{header}\n{'=' * langste_row}\n{rows}```",
             color=Color.blue()
         )
@@ -56,23 +56,18 @@ class Experience(Cog):
     async def rank(self, ctx, member: Optional[Member]):
         """Displays the current level a member is."""
         member = member or ctx.author
+        xp, msg, lvl = db.record("SELECT Experience, Messages, XpLevel FROM userData WHERE GuildId = %s AND UserID = %s", ctx.guild.id, member.id)
 
-        user = db.record("SELECT UserID FROM userData WHERE GuildID = %s AND UserID = %s", ctx.guild.id, ctx.author.id)
-        if user is None:
-            await ctx.send(":x: Deze gebruiker heeft nog geen gebruikers data.")
-        else:
-            xp, msg, lvl = db.record("SELECT Experience, Messages, XpLevel FROM userData WHERE GuildId = %s AND UserID = %s", ctx.guild.id, member.id)
-
-            embed = Embed(
-                title=f"Rank van {member}",
-                color=member.color
-            )
-            embed.add_field(name="Experience", value=f"{xp}", inline=True)
-            embed.add_field(name="Level", value=f"{lvl}", inline=True)
-            embed.add_field(name="Berichten", value=f"{msg}", inline=True)
-            embed.set_thumbnail(url=member.avatar_url)
-            embed.set_footer(text=self.bot.FOOTER)
-            await ctx.send(embed=embed)
+        embed = Embed(
+            title=f"Rank van {member}",
+            color=member.color
+        )
+        embed.add_field(name="Experience", value=f"{xp}", inline=True)
+        embed.add_field(name="Level", value=f"{lvl}", inline=True)
+        embed.add_field(name="Berichten", value=f"{msg}", inline=True)
+        embed.set_thumbnail(url=member.avatar_url)
+        embed.set_footer(text=self.bot.FOOTER)
+        await ctx.send(embed=embed)
 
     @command()
     @cooldown(1, 5, BucketType.user)
@@ -87,7 +82,7 @@ class Experience(Cog):
         rows, langste_row = self.generate_rows(ctx.guild.id, records_per_page, offset, header_columns)
 
         if rows == "":
-            rows = "Geen gegevens gevonden."
+            rows = "No Records Found."
 
         current_page = offset // records_per_page + 1
         max_pages = ceil(len(db.records("SELECT * FROM userData WHERE GuildID = %s", ctx.guild.id)) / records_per_page)

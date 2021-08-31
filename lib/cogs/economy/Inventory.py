@@ -1,39 +1,53 @@
+from math import ceil
+
 from discord import Embed, Color, Member
 from discord.ext.commands import command, Cog, BucketType, cooldown
 
-from lib.checks import general, lang
 from lib.db import db
 
 
 class Inventory(Cog):
+    ROWS_PER_PAGE = 5
+
     def __init__(self, bot):
         self.bot = bot
 
+    @staticmethod
+    def get_inventory(guild_id, member_id, offset=0):
+        return db.records(f"SELECT * FROM userInventory WHERE GuildID = %s AND UserID = %s ORDER BY ItemID DESC LIMIT 10 OFFSET {offset}", guild_id, member_id)
+
+    @staticmethod
+    def get_item(item_id):
+        return db.record("SELECT * FROM globalInventory WHERE ItemID = %s", item_id)
+
+    def create_inventory(self, inventory):
+        description = ""
+        if inventory:
+            for row in inventory:
+                item = self.get_item(row[3])
+                description += f":{item[3]}: **{item[2].title()}** — {row[4]}\n__ID__ `{item[0]}` — {item[1].title()}\n\n"
+        else:
+            description = "No Items Found."
+        return description
+
+    def create_embed(self, member, guild_id, inventory, page):
+        entire_inv = db.records(f"SELECT * FROM userInventory WHERE GuildID = %s AND UserID = %s", guild_id, member.id)
+        embed = Embed(title="Owned Items", description=self.create_inventory(inventory), color=Color.blue())
+        embed.set_author(name=f"Inventory of {member.display_name}", icon_url=f"{member.avatar_url}")
+        embed.set_footer(text=f"{self.bot.FOOTER} | Page {page} of {ceil(len(entire_inv) / self.ROWS_PER_PAGE)}")
+        return embed
+
+    def calculate_offset(self, page):
+        return (page - 1) * self.ROWS_PER_PAGE
+
     @command(name='inventory', aliases=["inv"])
     @cooldown(1, 5, BucketType.user)
-    async def inventory(self, ctx, member: Member = None):
+    async def inventory(self, ctx, member: Member = None, page: int = 1):
         """Check someone's inventory to see what they have."""
         member = member or ctx.author
-
-        inv = db.record("SELECT Inventory FROM userData WHERE GuildID = %s AND UserID = %s", ctx.guild.id, member.id)
-        rod, lock, gun, bomb = general.get_quantity(inv)
-        inv_list = [[lang.get_message(ctx.language, 'INV_FishingRod'), rod, ":fishing_pole_and_fish:"],
-                    [lang.get_message(ctx.language, 'INV_Lock'), lock, ":lock:"],
-                    [lang.get_message(ctx.language, 'INV_Gun'), gun, ":gun:"]]
-
-        desc = ""
-        for i in inv_list:
-            emote = ":white_check_mark:" if i[1] == 1 else ":x:"
-            desc += f"{i[2]} {i[0]}: {emote}\n"
-        desc += f":bomb: {lang.get_message(ctx.language, 'INV_Bomb')}: {bomb}x"
-
-        embed = Embed(
-            description=desc,
-            color=Color.blue()
-        )
-        embed.set_author(name=lang.get_message(ctx.language, 'INV_InventoryOf') % member, icon_url=f"{member.avatar_url}")
-        embed.set_footer(text=self.bot.FOOTER)
-        await ctx.send(embed=embed)
+        offset = self.calculate_offset(page)
+        inventory = self.get_inventory(ctx.guild.id, member.id, offset)
+        await ctx.send(embed=self.create_embed(member, ctx.guild.id, inventory, page))
 
     @Cog.listener()
     async def on_ready(self):

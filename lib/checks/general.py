@@ -26,56 +26,22 @@ def create_row(guild_id, user_id):
         db.execute("INSERT INTO userData (GuildId, UserID) VALUES (%s, %s)", guild_id, user_id)
 
 
-def has_failed(guild_id, command):
-    failrates = db.record(f"SELECT Failrates FROM guilds WHERE GuildID = %s", guild_id)
-    failrate = get_value(command.lower(), failrates[0])
-
-    number = randint(1, 100)
-    if number >= failrate:
-        return False
-    else:
-        return True
-
-
-def get_quantity(inv):
-    fishing_rod = lock = gun = bomb = 0
-
-    if inv != ("",):
-        items = inv[0].split('|')
-        for item in items:
-            if item.startswith('fishing_rod'):
-                fishing_rod = 1
-            elif item.startswith('gun'):
-                gun = 1
-            elif item.startswith('lock'):
-                lock = 1
-            elif item.startswith('bomb'):
-                item, quantity = item.split('*')
-                bomb = quantity
-
-    return fishing_rod, lock, gun, bomb
-
-
-def extra_rob(guild_id, user_id):
-    user_inv = db.record("SELECT Inventory FROM userData WHERE GuildID = %s AND UserID = %s", guild_id, user_id)
-    rod, lock, gun, bomb = get_quantity(user_inv)
-    return (lock * 5) + (gun * 10) + bomb
-
-
 def command_is_disabled(guild_id, command):
     command_status = db.record(f"SELECT DisabledCommands FROM guilds WHERE GuildID = %s", guild_id)
-    return True if command.lower() in command_status[0].split(',') else False
+    return True if command.name.lower() in command_status[0].split(',') else False
 
 
 def get_currency(guild_id):
     return db.record("SELECT Currency FROM guilds WHERE GuildID = %s", guild_id)[0]
 
 
-def get_payout(guild_id, command, type_="Payouts"):
-    payouts = db.record(f"SELECT {type_} FROM guildPayouts WHERE GuildID = %s", guild_id)
-    payout = get_value(command, payouts[0])
-    payout = payout.split(',')
-    return randint(int(payout[0]), int(payout[1]))
+def has_failed(command):
+    failrate = get_value(command.name.lower(), "beg:10|fish:5|crime:60|rob:40")
+    return False if randint(1, 100) >= failrate else True
+
+
+def get_lvl(exp):
+    return int(exp / 100)
 
 
 def get_random_sentence(file, guild_id=0, payout=0):
@@ -90,11 +56,11 @@ def get_random_sentence(file, guild_id=0, payout=0):
 
 
 def add_money(guild_id, user_id, money):
-    db.execute("UPDATE userData SET cash = cash + %s, netto = netto + %s WHERE GuildID = %s AND UserID = %s", money, money, guild_id, user_id)
+    db.execute("UPDATE userData SET cash = cash + %s, Net = Net + %s WHERE GuildID = %s AND UserID = %s", money, money, guild_id, user_id)
 
 
 def remove_money(guild_id, user_id, money):
-    db.execute("UPDATE userData SET cash = cash - %s, netto = netto - %s WHERE GuildID = %s AND UserID = %s", money, money, guild_id, user_id)
+    db.execute("UPDATE userData SET cash = cash - %s, Net = Net - %s WHERE GuildID = %s AND UserID = %s", money, money, guild_id, user_id)
 
 
 def check_money(money):
@@ -103,7 +69,7 @@ def check_money(money):
 
 def check_balance(guild_id, user_id, amount):
     amount = abs(amount)
-    bal = db.record("SELECT netto FROM userData WHERE GuildID = %s AND UserID = %s", guild_id, user_id)
+    bal = db.record("SELECT Net FROM userData WHERE GuildID = %s AND UserID = %s", guild_id, user_id)
 
     if bal[0] + amount > max_balance:
         return abs(max_balance - bal[0])

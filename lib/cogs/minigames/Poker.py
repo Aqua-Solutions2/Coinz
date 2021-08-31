@@ -5,7 +5,7 @@ from random import choice
 from discord import Embed, Color
 from discord.ext.commands import command, Cog, BucketType, cooldown
 
-from lib.checks import general, lang, minigames
+from lib.checks import general, minigames
 
 COMMAND = "poker"
 
@@ -22,8 +22,8 @@ class Poker(Cog):
 
     def create_embed(self, ctx, cards, profit, currency, desc, color=Color.blue()):
         embed = Embed(description=desc, color=color)
-        embed.add_field(name=lang.get_message(ctx.language, 'POKER_YourHand'), value=f"".join([str(item) for item in cards]), inline=True)
-        embed.add_field(name=lang.get_message(ctx.language, 'CMD_Profit'), value=f"{currency}{profit}", inline=True)
+        embed.add_field(name="Your Hand", value=f"".join([str(item) for item in cards]), inline=True)
+        embed.add_field(name="Profit", value=f"{currency}{profit}", inline=True)
         embed.set_author(name=COMMAND.title(), icon_url=f"{ctx.author.avatar_url}")
         embed.set_footer(text=self.bot.FOOTER)
         return embed
@@ -214,61 +214,57 @@ class Poker(Cog):
         """
         Be a real BALR and play poker.
         /Examples/ `poker 500`
-        /Bet Range/ Min: %CURRENCY%%MIN%\nMax: %CURRENCY%%MAX%
         /Multipliers/ 15x - Royal Flush\n12x - Straight Flush\n10x - Four of a Kind\n8x - Full House\n6x - Flush\n4x - Straight\n3x - Three of a kind\n2x - Two Pair\n1.5x - One Pair
         """
-        if general.check_status(ctx.guild.id, COMMAND):
-            currency = general.get_currency(ctx.guild.id)
-            err_msg = minigames.general_checks(ctx.guild.id, ctx.author.id, bet, COMMAND)
+        currency = general.get_currency(ctx.guild.id)
+        err_msg = minigames.general_checks(ctx.guild.id, ctx.author.id, bet)
 
-            if err_msg is not None:
-                await ctx.send(lang.get_message(ctx.language, err_msg))
-                return
+        if err_msg is not None:
+            await ctx.send(err_msg)
+            return
 
-            general.remove_money(ctx.guild.id, ctx.author.id, bet)
-            player_hand = []
-            deck = self.cards["deck"]
+        general.remove_money(ctx.guild.id, ctx.author.id, bet)
+        player_hand = []
+        deck = self.cards["deck"]
 
-            for i in range(5):
-                card = self.draw_card(deck)
-                deck.remove(card)
-                player_hand.append(card["emote"])
+        for i in range(5):
+            card = self.draw_card(deck)
+            deck.remove(card)
+            player_hand.append(card["emote"])
 
-            desc = "`draw` " + lang.get_message(ctx.language, 'POKER_Default')
-            embed = self.create_embed(ctx, player_hand, bet, currency, desc)
-            message = await ctx.send(embed=embed)
+        desc = "`draw` to reroll unlocked cards.\nUse reactions to lock cards."
+        embed = self.create_embed(ctx, player_hand, bet, currency, desc)
+        message = await ctx.send(embed=embed)
 
-            for emote in self.EMOTES:
-                await message.add_reaction(emote)
+        for emote in self.EMOTES:
+            await message.add_reaction(emote)
 
-            def check(m):
-                return m.author == ctx.author and m.content.lower() == "draw"
+        def check(m):
+            return m.author == ctx.author and m.content.lower() == "draw"
 
-            try:
-                await self.bot.wait_for('message', check=check, timeout=30)
-                locked_cards = await self.get_emotes(ctx, message.id)
+        try:
+            await self.bot.wait_for('message', check=check, timeout=30)
+            locked_cards = await self.get_emotes(ctx, message.id)
 
-                x = 0
-                while x < len(player_hand):
-                    if locked_cards[x] == 0:
-                        player_hand.remove(player_hand[x])
-                        card = self.draw_card(deck)
-                        deck.remove(card)
-                        player_hand.insert(x, card["emote"])
-                    x += 1
+            x = 0
+            while x < len(player_hand):
+                if locked_cards[x] == 0:
+                    player_hand.remove(player_hand[x])
+                    card = self.draw_card(deck)
+                    deck.remove(card)
+                    player_hand.insert(x, card["emote"])
+                x += 1
 
-                player_cards = self.convert_emotes_to_cards(player_hand)
-                user_won, ending, multiplier = self.check_game(player_cards)
+            player_cards = self.convert_emotes_to_cards(player_hand)
+            user_won, ending, multiplier = self.check_game(player_cards)
 
-                if user_won:
-                    await message.edit(embed=self.create_embed(ctx, player_hand, int(bet * multiplier), currency, f"{lang.get_message(ctx.language, 'MINIGAMES_UserWon')}: **{ending}**", Color.green()))
-                    general.add_money(ctx.guild.id, ctx.author.id, int(bet * multiplier))
-                else:
-                    await message.edit(embed=self.create_embed(ctx, player_hand, -bet, currency, f"{lang.get_message(ctx.language, 'MINIGAMES_UserLost')} {currency}{bet}.", Color.red()))
-            except TimeoutError:
-                await message.edit(embed=self.create_embed(ctx, player_hand, -bet, currency, lang.get_message(ctx.language, 'CMD_NoResponds'), Color.red()))
-        else:
-            ctx.command.reset_cooldown(ctx)
+            if user_won:
+                await message.edit(embed=self.create_embed(ctx, player_hand, int(bet * multiplier), currency, f"You Won: **{ending}**", Color.green()))
+                general.add_money(ctx.guild.id, ctx.author.id, int(bet * multiplier))
+            else:
+                await message.edit(embed=self.create_embed(ctx, player_hand, -bet, currency, f"You Lost {currency}{bet}.", Color.red()))
+        except TimeoutError:
+            await message.edit(embed=self.create_embed(ctx, player_hand, -bet, currency, "I got no responds. The command is cancelled.", Color.red()))
 
     @Cog.listener()
     async def on_ready(self):

@@ -4,7 +4,7 @@ from random import randint
 from discord import Embed, Color
 from discord.ext.commands import command, Cog, BucketType, cooldown
 
-from lib.checks import general, lang, minigames
+from lib.checks import general, minigames
 
 COMMAND = "horse"
 
@@ -36,55 +36,51 @@ class Horse(Cog):
         """
         Bet on a horse and hope it wins the race!
         /Examples/ `horse 500 1`\n`horse 500 5`
-        /Bet Range/ Min: %CURRENCY%%MIN%\nMax: %CURRENCY%%MAX%
         """
-        if general.check_status(ctx.guild.id, COMMAND):
-            err_msg = minigames.general_checks(ctx.guild.id, ctx.author.id, bet, COMMAND)
+        err_msg = minigames.general_checks(ctx.guild.id, ctx.author.id, bet)
 
-            if err_msg is not None:
-                await ctx.send(lang.get_message(ctx.language, err_msg))
-                return
+        if err_msg is not None:
+            await ctx.send(err_msg)
+            return
 
-            if self.MAX_HORSES >= horse >= 1:
-                general.remove_money(ctx.guild.id, ctx.author.id, bet)
-            else:
-                await ctx.send(lang.get_message(ctx.language, 'CMD_NumberExceedLimit') % (1, self.MAX_HORSES))
-                return
+        if self.MAX_HORSES >= horse >= 1:
+            general.remove_money(ctx.guild.id, ctx.author.id, bet)
+        else:
+            await ctx.send("You have to give a valid number between %s and %s." % (1, self.MAX_HORSES))
+            return
 
-            horses = [0 for x in range(self.MAX_HORSES)]
-            message = await ctx.send(embed=self.create_embed(ctx, horses))
+        horses = [0 for x in range(self.MAX_HORSES)]
+        message = await ctx.send(embed=self.create_embed(ctx, horses))
 
-            while self.LENGTH_TRACK not in horses:
-                await sleep(1.2)
+        while self.LENGTH_TRACK not in horses:
+            await sleep(1.2)
+            horse_ = randint(1, self.MAX_HORSES)
+            horses[horse_ - 1] += 1
+
+            if horses[horse_ - 1] != self.LENGTH_TRACK:
                 horse_ = randint(1, self.MAX_HORSES)
                 horses[horse_ - 1] += 1
 
-                if horses[horse_ - 1] != self.LENGTH_TRACK:
-                    horse_ = randint(1, self.MAX_HORSES)
-                    horses[horse_ - 1] += 1
+            await message.edit(embed=self.create_embed(ctx, horses))
 
-                await message.edit(embed=self.create_embed(ctx, horses))
+        currency = general.get_currency(ctx.guild.id)
 
-            currency = general.get_currency(ctx.guild.id)
+        horse_number = 1
+        winning_horse = 0
+        for horse_ in horses:
+            if horse_ == self.LENGTH_TRACK:
+                winning_horse = horse_number
+                break
+            horse_number += 1
 
-            horse_number = 1
-            winning_horse = 0
-            for horse_ in horses:
-                if horse_ == self.LENGTH_TRACK:
-                    winning_horse = horse_number
-                    break
-                horse_number += 1
-
-            if winning_horse == horse:
-                general.add_money(ctx.guild.id, ctx.author.id, int(bet * 2.5))
-                desc = lang.get_message(ctx.language, 'MINIGAMES_UserWon') + f" {currency}{int(bet * 2.5)}"
-                color = Color.green()
-            else:
-                desc = lang.get_message(ctx.language, 'MINIGAMES_UserLost') + f" {currency}{bet}"
-                color = Color.red()
-            await message.edit(embed=self.create_embed(ctx, horses, desc, color))
+        if winning_horse == horse:
+            general.add_money(ctx.guild.id, ctx.author.id, int(bet * 2.5))
+            desc = f"You Won {currency}{int(bet * 2.5)}"
+            color = Color.green()
         else:
-            ctx.command.reset_cooldown(ctx)
+            desc = f"You Lost {currency}{bet}"
+            color = Color.red()
+        await message.edit(embed=self.create_embed(ctx, horses, desc, color))
 
     @Cog.listener()
     async def on_ready(self):

@@ -1,7 +1,7 @@
 from discord import Embed, Color, Member
 from discord.ext.commands import command, Cog, BucketType, cooldown
 
-from lib.checks import general, lang
+from lib.checks import general
 from lib.db import db
 
 
@@ -9,12 +9,12 @@ class Money(Cog):
     def __init__(self, bot):
         self.bot = bot
 
-    async def print_account_balance(self, ctx, member, currency, cash, bank, netto):
+    async def print_account_balance(self, ctx, member, currency, cash, bank, net):
         embed = Embed(color=Color.blue())
-        embed.add_field(name=lang.get_message(ctx.language, 'MONEY_Cash'), value=f"{currency}{cash}", inline=True)
-        embed.add_field(name=lang.get_message(ctx.language, 'MONEY_Bank'), value=f"{currency}{bank}", inline=True)
-        embed.add_field(name=lang.get_message(ctx.language, 'MONEY_Total'), value=f"{currency}{netto}", inline=True)
-        embed.set_author(name=lang.get_message(ctx.language, 'MONEY_AccountOf') % member, icon_url=f"{member.avatar_url}")
+        embed.add_field(name="Cash", value=f"{currency}{cash}", inline=True)
+        embed.add_field(name="Bank", value=f"{currency}{bank}", inline=True)
+        embed.add_field(name="Net", value=f"{currency}{net}", inline=True)
+        embed.set_author(name=f"Account of {member.display_name}", icon_url=f"{member.avatar_url}")
         embed.set_footer(text=self.bot.FOOTER)
         await ctx.send(embed=embed)
 
@@ -28,13 +28,13 @@ class Money(Cog):
             try:
                 money = int(money)
                 if max_money <= 0:
-                    await ctx.send(lang.get_message(ctx.language, 'MONEY_NoBalance'))
+                    await ctx.send("You don't have any money in your account.")
                 elif 0 < money <= max_money:
                     money_calculated = money
                 else:
-                    await ctx.send(lang.get_message(ctx.language, 'CMD_NumberExceedLimit') % (1, max_money))
+                    await ctx.send("You have to give a valid number between %s and %s." % (1, max_money))
             except ValueError:
-                await ctx.send(lang.get_message(ctx.language, 'ERR_InvalidArguments'))
+                await ctx.send("Invalid Arguments. If you need help, use the `help` command.")
 
         return money_calculated
 
@@ -60,7 +60,7 @@ class Money(Cog):
             return
 
         db.execute("UPDATE userData SET cash = cash - %s, bank = bank + %s WHERE GuildID = %s AND UserID = %s", money, money, ctx.guild.id, ctx.author.id)
-        await ctx.send(":white_check_mark: " + lang.get_message(ctx.language, 'MONEY_Deposit') % (general.get_currency(ctx.guild.id), money))
+        await ctx.send(":white_check_mark: Deposited %s%s to your bank." % (general.get_currency(ctx.guild.id), money))
 
     @command(name="withdraw", aliases=["with"])
     @cooldown(1, 5, BucketType.user)
@@ -76,7 +76,7 @@ class Money(Cog):
             return
 
         db.execute("UPDATE userData SET cash = cash + %s, bank = bank - %s WHERE GuildID = %s AND UserID = %s", money, money, ctx.guild.id, ctx.author.id)
-        await ctx.send(":white_check_mark: " + lang.get_message(ctx.language, 'MONEY_Withdraw') % (general.get_currency(ctx.guild.id), money))
+        await ctx.send(":white_check_mark: Withdrew %s%s from your bank." % (general.get_currency(ctx.guild.id), money))
 
     @command(name="pay", aliases=["give-money"])
     @cooldown(1, 5, BucketType.user)
@@ -85,24 +85,27 @@ class Money(Cog):
         Pay someone some cash.
         /Extra/ Amount can be a number or `all`. All means that you want to select all money you have.
         """
-        if general.check_status(ctx.guild.id, "pay"):
-            cash_author = db.record("SELECT cash FROM userData WHERE GuildID = %s AND UserID = %s", ctx.guild.id, ctx.author.id)
+        if member.id == ctx.author.id:
+            await ctx.send("You cannot send money to yourself.")
+            return
 
-            money = await self.calculate_money(ctx, amount, cash_author[0])
-            if money == -1:
-                return
+        cash_author = db.record("SELECT cash FROM userData WHERE GuildID = %s AND UserID = %s", ctx.guild.id, ctx.author.id)
 
-            general.create_row(ctx.guild.id, member.id)
-            new_money = general.check_balance(ctx.guild.id, member.id, money)
-            if new_money == 0:
-                await ctx.send(lang.get_message(ctx.language, 'CMD_ExceedBalLimitMember'))
-                return
-            else:
-                money = new_money
+        money = await self.calculate_money(ctx, amount, cash_author[0])
+        if money == -1:
+            return
 
-            db.execute("UPDATE userData SET cash = cash - %s, netto = netto - %s WHERE GuildID = %s AND UserID = %s", money, money, ctx.guild.id, ctx.author.id)
-            db.execute("UPDATE userData SET cash = cash + %s, netto = netto + %s WHERE GuildID = %s AND UserID = %s", money, money, ctx.guild.id, member.id)
-            await ctx.send(lang.get_message(ctx.language, 'MONEY_Pay') % (member, general.get_currency(ctx.guild.id), money))
+        general.create_row(ctx.guild.id, member.id)
+        new_money = general.check_balance(ctx.guild.id, member.id, money)
+        if new_money == 0:
+            await ctx.send("This user has reached the maximum balance. You cannot give this user more money.")
+            return
+        else:
+            money = new_money
+
+        db.execute("UPDATE userData SET cash = cash - %s, Net = Net - %s WHERE GuildID = %s AND UserID = %s", money, money, ctx.guild.id, ctx.author.id)
+        db.execute("UPDATE userData SET cash = cash + %s, Net = Net + %s WHERE GuildID = %s AND UserID = %s", money, money, ctx.guild.id, member.id)
+        await ctx.send("You gave %s %s%s of your cash." % (member, general.get_currency(ctx.guild.id), money))
 
     @Cog.listener()
     async def on_ready(self):

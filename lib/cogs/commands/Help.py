@@ -1,7 +1,7 @@
 from discord import Embed, Color
 from discord.ext.commands import Cog, command, cooldown, BucketType
 
-from lib.checks import general, lang
+from lib.checks import general
 from lib.db import db
 
 
@@ -50,30 +50,12 @@ class HelpCmd(Cog):
         return embed
 
     @staticmethod
-    def get_payouts(table, cmd, guild_id):
-        try:
-            payouts = db.record(f"SELECT {table} FROM guildPayouts WHERE GuildID = %s", guild_id)
-            payout = general.get_value(str(cmd).replace('-', '').lower(), payouts[0])
-            payout = payout.split(',')
-            return payout[0], payout[1]
-        except Exception:
-            return 0, 0
-
-    def replace_placeholders(self, guild_id, cmd, value):
+    def replace_placeholders(guild_id, cmd, value):
         currency = db.record("SELECT Currency FROM guilds WHERE GuildID = %s", guild_id)
+        failrate = general.get_value(str(cmd).lower(), "beg:10|fish:5|crime:60|rob:40")
+
         value = value.replace('%CURRENCY%', f'{currency[0]}')
-
-        failrates = db.record("SELECT Failrates FROM guilds WHERE GuildID = %s", guild_id)
-        failrate = general.get_value(str(cmd).lower(), failrates[0])
         value = value.replace('%FAIL%', f'{failrate}%')
-
-        if str(cmd).lower() in ['beg', 'crime', 'fish']:
-            min_payout, max_payout = self.get_payouts("Payouts", cmd, guild_id)
-        else:
-            min_payout, max_payout = self.get_payouts("PayoutsCasino", cmd, guild_id)
-            min_payout = self.bot.MIN_BET
-        value = value.replace('%MIN%', f'{min_payout}')
-        value = value.replace('%MAX%', f'{max_payout}')
         return value
 
     def get_command(self, cmd_name):
@@ -99,26 +81,26 @@ class HelpCmd(Cog):
         if cmd == ():
             prefix = db.record("SELECT Prefix FROM guilds WHERE GuildID = %s", ctx.guild.id)
             embed = Embed(
-                description=f"{lang.get_message(ctx.language, 'HELP_CommandUsage')}: `{prefix[0]}help <command>`",
+                description=f"Command Usage: `{prefix[0]}help <command>`",
                 color=Color.blue()
             )
-            embed.add_field(name="General Commands", value="`help`, `rank`, `levels`, `user-info`, `guild-info`, `reset`, `dashboard`, `source`, `invite`, `ping`, `stats`", inline=False)
-            embed.add_field(name="Economy Commands", value="`eco`, `beg`, `crime`, `fish`, `inventory`, `balance`, `deposit`, `withdraw`, `pay`, `request`, `social`, `work`, `job`, `shop`, `animal`", inline=False)
-            embed.add_field(name="Minigame Commands", value="`blackjack`, `roulette`, `slots`, `coinflip`, `crash`, `horse`, `russian-roulette`, `poker`, `higher-lower`, `tictactoe`", inline=False)
+            embed.add_field(name="General Commands", value="`help`, `rank`, `leveltop`, `profile`, `guild-info`, `reset`, `dashboard`, `source`, `invite`, `ping`, `stats`, `shop`, `job`", inline=False)
+            embed.add_field(name="Economy Commands", value="`eco`, `beg`, `crime`, `fish`, `inventory`, `balance`, `deposit`, `withdraw`, `pay`, `request`, `social`, `work`, `post-meme`, `dig`, `search`", inline=False)
+            embed.add_field(name="Minigame Commands", value="`blackjack`, `roulette`, `slots`, `coinflip`, `crash`, `horse`, `russian-roulette`, `poker`, `higher-lower`, `tictactoe`, `bet`, `scratch`", inline=False)
             embed.set_footer(text=self.bot.FOOTER)
             embed.set_author(name="Help", icon_url=f"{self.bot.user.avatar_url}")
             await ctx.send(embed=embed)
         else:
             cog_cmd = self.get_command("-".join(cmd).lower())
             if cog_cmd is None:
-                await ctx.send(lang.get_message(ctx.language, 'HELP_404'))
+                await ctx.send("Sorry, that command was not found.")
             else:
                 embed = self.create_embed(ctx, cog_cmd)
 
                 if embed is not None:
                     await ctx.send(embed=embed)
                 else:
-                    await ctx.send(lang.get_message(ctx.language, 'HELP_404'))
+                    await ctx.send("Sorry, that command was not found.")
 
     @Cog.listener()
     async def on_ready(self):
